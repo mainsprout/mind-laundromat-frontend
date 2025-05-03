@@ -10,7 +10,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _rotationAnimation;
+  late Animation<double> _rotationY;
   late Animation<Color?> _colorAnimation;
 
   @override
@@ -20,9 +20,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    )..repeat(reverse: true); // 계속 반복
+    )..repeat(reverse: true);
 
-    _rotationAnimation = Tween<double>(begin: 0, end: 2 * pi).animate(
+    _rotationY = Tween<double>(begin: 0, end: pi).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
@@ -44,29 +44,44 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       body: SafeArea(
         child: Stack(
           children: [
-            // 상단 아이콘
+            // 상단 아이콘들
             Positioned(
               top: 16,
               left: 16,
-              child: Icon(Icons.calendar_today, size: 28),
+              child: Icon(Icons.calendar_today, size: 40),
             ),
             Positioned(
               top: 16,
               right: 16,
-              child: Icon(Icons.person, size: 28),
+              child: Icon(Icons.person, size: 40),
             ),
 
-            // 중앙 회전 하트 애니메이션
+            // 중앙: Y축 회전 하트
             Center(
               child: AnimatedBuilder(
-                animation: _controller,
+                animation: _rotationY,
                 builder: (context, child) {
-                  return Transform.rotate(
-                    angle: _rotationAnimation.value,
-                    child: Icon(
-                      Icons.favorite,
-                      size: 120,
-                      color: _colorAnimation.value,
+                  return Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateY(_rotationY.value),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // 테두리 하트 (항상 검정색)
+                        Icon(
+                          Icons.favorite_border,
+                          size: 124, // 살짝 크게
+                          color: Colors.black,
+                        ),
+                        // 안쪽 하트 (애니메이션 색상)
+                        Icon(
+                          Icons.favorite,
+                          size: 120,
+                          color: _colorAnimation.value,
+                        ),
+                      ],
                     ),
                   );
                 },
