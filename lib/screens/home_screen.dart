@@ -44,19 +44,45 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       body: SafeArea(
         child: Stack(
           children: [
-            // 상단 아이콘들
+            // 상단: 캘린더 아이콘
             Positioned(
               top: 16,
               left: 16,
-              child: Icon(Icons.calendar_today, size: 40),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(40),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/calendar');
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.calendar_today, size: 40),
+                  ),
+                ),
+              ),
             ),
+
+            // 상단: 프로필 아이콘
             Positioned(
               top: 16,
               right: 16,
-              child: Icon(Icons.person, size: 40),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(40),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/profile');
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.person, size: 40),
+                  ),
+                ),
+              ),
             ),
 
-            // 중앙: Y축 회전 하트
+            // 중앙: 하트 애니메이션
             Center(
               child: AnimatedBuilder(
                 animation: _rotationY,
@@ -69,13 +95,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // 테두리 하트 (항상 검정색)
-                        Icon(
+                        const Icon(
                           Icons.favorite_border,
-                          size: 124, // 살짝 크게
+                          size: 124,
                           color: Colors.black,
                         ),
-                        // 안쪽 하트 (애니메이션 색상)
                         Icon(
                           Icons.favorite,
                           size: 120,
@@ -95,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               right: 32,
               child: ElevatedButton(
                 onPressed: () {
-                  // Doing Clean 버튼 동작
+                  Navigator.pushNamed(context, '/counsel');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
