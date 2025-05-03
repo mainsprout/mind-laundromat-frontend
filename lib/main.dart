@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/sign_in_screen.dart';
-import 'screens/sign_up_screen.dart';
+import 'screens/screens.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,6 +22,9 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/sign-in': (context) => const SignInScreen(),
         '/sign-up': (context) => const SignUpScreen(),
+        '/calendar': (context) => CalendarScreen(),
+        '/profile': (context) => ProfileScreen(),
+        '/counsel': (context) => CounselScreen(),
       },
     );
   }
