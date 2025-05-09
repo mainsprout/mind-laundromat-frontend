@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'start_screen.dart';
+import 'package:mind_laundromat/widgets/custom_app_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,6 +14,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String _email = '';
+  String _firstname = '';
+  String _lastname = '';
   String _name = '';
 
   @override
@@ -32,12 +35,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
         final userInfo = data['data'];
 
         setState(() {
           _email = userInfo['email'];
-          _name = userInfo['name'];
+          _firstname = userInfo['first_name'];
+          _lastname = userInfo['last_name'];
+          _name = '$_firstname $_lastname';
         });
       } else {
         print('Failed to fetch user info. Status: ${response.statusCode}');
@@ -99,11 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
+      appBar: const CustomAppBar(title: 'Profile'),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
