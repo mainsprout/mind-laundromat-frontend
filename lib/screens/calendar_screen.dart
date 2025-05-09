@@ -45,7 +45,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           calendarStyle: const CalendarStyle(
             todayDecoration: BoxDecoration(
-              color: Colors.orange,
+              color: Color(0xFF6BA8E6),
               shape: BoxShape.circle,
             ),
             selectedDecoration: BoxDecoration(
