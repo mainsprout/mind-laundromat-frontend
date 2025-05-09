@@ -21,9 +21,9 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/sign-in': (context) => const SignInScreen(),
         '/sign-up': (context) => const SignUpScreen(),
-        '/calendar': (context) => CalendarScreen(),
-        '/profile': (context) => ProfileScreen(),
-        '/counsel': (context) => CounselScreen(),
+        '/calendar': (context) => const CalendarScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/counsel': (context) => const CounselScreen(),
       },
     );
   }
