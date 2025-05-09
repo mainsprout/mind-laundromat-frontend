@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'home_screen.dart';
+import 'package:flutter/gestures.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -13,39 +15,36 @@ class _SignInScreenState extends State<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // 로그인 성공 후 상태 저장
   Future<void> _signIn() async {
     final email = _emailController.text;
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      // 빈 입력 처리
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email address and password.")),
+        const SnackBar(content: Text("Please enter your email and password.")),
       );
       return;
     }
 
-    // 로그인 API 호출 (백엔드 연동)
     final response = await _loginApi(email, password);
 
     if (response != null && response['token'] != null) {
-      // 로그인 성공 후 SharedPreferences에 상태 저장
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true); // 로그인 상태 저장
-      await prefs.setString('access_token', response['token']);  // 로그인 응답에서 받은 토큰
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('access_token', response['token']);
 
-      // 로그인 후 홈 화면으로 이동
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+            (route) => false,
+      );
     } else {
-      // 로그인 실패 처리
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Invalid email or password")),
       );
     }
   }
 
-  // 로그인 API 호출
   Future<Map<String, dynamic>?> _loginApi(String email, String password) async {
     final url = 'http://10.0.2.2:8080/login';
 
@@ -57,21 +56,13 @@ class _SignInScreenState extends State<SignInScreen> {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      print('Status: ${response.statusCode}');
-      print('Headers: ${response.headers}');
-
       if (response.statusCode == 200) {
         final token = response.headers['authorization'];
         if (token != null && token.startsWith('Bearer ')) {
-          return {'token': token}; // Bearer 포함해서 저장 (필요시 split 가능)
-        } else {
-          print('Token not found in headers.');
-          return null;
+          return {'token': token};
         }
-      } else {
-        print('Failed with status ${response.statusCode}');
-        return null;
       }
+      return null;
     } catch (e) {
       print('Error: $e');
       return null;
@@ -81,70 +72,152 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                "Sign In",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 40),
+      resizeToAvoidBottomInset: true,
+      backgroundColor: const Color(0xFFADCCEC),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 200),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Here for you, always.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 50),
+                          Text(
+                            "sign in and start where you left off.\nYour thoughts are safe here.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 40),
 
-              // 이메일 입력 필드
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+                    // 하단 흰색 박스
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: TextField(
+                                controller: _emailController,
+                                decoration: const InputDecoration(
+                                  hintText: "Enter your email",
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text("Password", style: TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: TextField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                decoration: const InputDecoration(
+                                  hintText: "Enter your password",
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/forgot-password');
+                                },
+                                child: const Text("Forgot Password?", style: TextStyle(color: Colors.blue)),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: RichText(
+                                text: TextSpan(
+                                  text: "Don't have an account? ",
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                  children: [
+                                    TextSpan(
+                                      text: "SIGN UP",
+                                      style: const TextStyle(
+                                        color: Colors.blue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.pushNamed(context, '/sign-up');
+                                        },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _signIn,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Text("Sign In", style: TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // 비밀번호 입력 필드
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // 로그인 버튼
-              ElevatedButton(
-                onPressed: _signIn,
-                child: const Text("Sign In"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-
-              // 회원가입 화면으로 이동
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/sign-up');
-                },
-                child: const Text(
-                  "Don't have an account? Sign Up",
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
+
 }

@@ -133,7 +133,7 @@ class _StartScreenState extends State<StartScreen> {
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final width = constraints.maxWidth;
-                    _maxDragDistance = width - 160;
+                    _maxDragDistance = width - 200;
 
                     return Center(
                       child: Container(
@@ -141,7 +141,7 @@ class _StartScreenState extends State<StartScreen> {
                         height: 56,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(40),
-                          color: Color(0xFFADCCEC),//Colors.white.withOpacity(0.2),
+                          color: Color(0xFF042043),//Colors.white.withOpacity(0.2),
                         ),
                         child: Stack(
                           children: [
@@ -160,6 +160,18 @@ class _StartScreenState extends State<StartScreen> {
                                     ).createShader(bounds);
                                   },
                                   blendMode: BlendMode.srcIn,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 16),
+                                    child: Image.asset(
+                                      'assets/arrow_hint.png',
+                                      //width: 60, // 원하는 크기로 조절하세요
+                                      //height: 20,
+                                      //fit: BoxFit.contain,
+                                      //color: Colors.white70, // 필요시 색 조정 (예: 텍스트 느낌 유지)
+                                    ),
+                                  ),
+
+                                  /*
                                   child: const Padding(
                                     padding: EdgeInsets.only(right: 16),
                                     child: Text(
@@ -170,6 +182,7 @@ class _StartScreenState extends State<StartScreen> {
                                       ),
                                     ),
                                   ),
+                                  */
                                 ),
                               ),
                             ),
@@ -189,7 +202,7 @@ class _StartScreenState extends State<StartScreen> {
                                   child: const Text(
                                     "Get Started!",
                                     style: TextStyle(
-                                      color: Color(0xFF446E9A),
+                                      color: Color(0xFF042043),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
