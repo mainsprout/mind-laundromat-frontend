@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -12,8 +14,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
 
-  String _gender = 'Male'; // 기본 값: Male
+  //String _gender = 'Male'; // 기본 값
 
+  /*
   // 성별 선택 버튼 위젯
   Widget _genderSelector(String label) {
     final isSelected = _gender == label;
@@ -50,25 +53,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // TODO: 회원가입 API 호출
+   */
+
+  // 회원가입 API 호출
   Future<void> _signUp() async {
-    final email = _emailController.text;
-    final password = _passwordController.text;
-    final name = _nameController.text;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final name = _nameController.text.trim();
 
     if (email.isEmpty || password.isEmpty || name.isEmpty) {
-      // 빈 입력 처리
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter all items.")),
       );
       return;
     }
 
-    // 회원가입 API 호출 (백엔드 연동은 나중에 구현)
-    print("Email: $email, Name: $name, Password: $password, Gender: $_gender");
+    //final gender = _gender.toUpperCase(); // "Male" → "MALE"
 
-    // 회원가입 후 로그인 화면으로 이동 (백엔드 연결 후 변경 예정)
-    Navigator.pushReplacementNamed(context, '/login');
+    final url = 'http://10.0.2.2:8080/auth/signup'; // TODO
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'name': name,
+          //'gender': gender,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Sign-up successful. Please log in.")),
+        );
+        Navigator.pushReplacementNamed(context, '/sign-in');
+      } else {
+        final error = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to sign up: ${error['message'] ?? 'Unknown error'}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
   }
 
   @override
@@ -78,83 +109,80 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                "Sign Up",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 40),
-
-              // 이메일 입력 필드
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+          child: SingleChildScrollView( // 스크롤 가능하도록 수정
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  "Sign Up",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 40),
 
-              // 이름 입력 필드
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // 비밀번호 입력 필드
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  _genderSelector("Male"),
-                  _genderSelector("Female"),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // 회원가입 버튼
-              ElevatedButton(
-                onPressed: _signUp,
-                child: const Text("Sign Up"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
                   ),
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
                 ),
-              ),
+                const SizedBox(height: 16),
 
-              //const SizedBox(height: 8),
-
-              // 로그인 화면으로 이동
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/sign-in');
-                },
-                child: const Text(
-                  "Already have an account? Sign In",
-                  style: TextStyle(color: Colors.blue),
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                /*
+                Row(
+                  children: [
+                    _genderSelector("Male"),
+                    _genderSelector("Female"),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                 */
+
+                ElevatedButton(
+                  onPressed: _signUp,
+                  child: const Text("Sign Up"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/sign-in');
+                  },
+                  child: const Text(
+                    "Already have an account? Sign In",
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
