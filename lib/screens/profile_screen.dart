@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'start_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mind_laundromat/services/api_service.dart';
@@ -53,11 +54,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('is_logged_in', false);
-    await prefs.remove('user_email');
+    await prefs.clear();
+    await prefs.setBool('isLoggedIn', false);
 
     if (mounted) {
-      Navigator.pushReplacementNamed(context, '/sign-in');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => StartScreen()), // StartPage는 로그인 화면으로 변경
+            (Route<dynamic> route) => false, // 모든 이전 화면을 제거
+      );
     }
   }
 
