@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../widgets/custom_app_bar.dart';
 
 class CounselScreen extends StatefulWidget {
   const CounselScreen({super.key});
@@ -78,11 +77,8 @@ class _CounselScreenState extends State<CounselScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('상담 챗봇'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
+      backgroundColor: Colors.grey[200],
+      appBar: const CustomAppBar(title: 'Counsel'),
       body: Column(
         children: [
           Expanded(
