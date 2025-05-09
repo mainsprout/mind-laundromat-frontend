@@ -68,118 +68,145 @@ class _StartScreenState extends State<StartScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const SizedBox(),
-            Column(
-              children: [
-                Image.asset(
-                  'assets/logo.png',
-                  width: 120,
-                  height: 120,
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  "Mind Laundry",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "For the thoughts left unsaid —\nwe’re here to listen and help you through.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                    height: 1.5,
-                  ),
-                ),
-              ],
+      backgroundColor: const Color(0xFFADCCEC), // 배경색
+      body: Stack(
+        children: [
+          // 배경 반원 (전체화면 기준으로 표시됨)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Image.asset(
+              'assets/back_circle.png',
+              fit: BoxFit.cover,
             ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                _maxDragDistance = width - 160;
+          ),
 
-                return Center(
-                  child: Container(
-                    width: width,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      color: Colors.black12,
+          // 실제 콘텐츠
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(),
+                Column(
+                  children: [
+                    Image.asset(
+                      'assets/start_logo.png',
+                      width: 200,
                     ),
-                    child: Stack(
-                      children: [
-                        // 오른쪽 그라데이션 >>>>
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: ShaderMask(
-                              shaderCallback: (Rect bounds) {
-                                return const LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    Colors.black26,
-                                    Colors.black87,
-                                  ],
-                                ).createShader(bounds);
-                              },
-                              blendMode: BlendMode.srcIn,
-                              child: const Padding(
-                                padding: EdgeInsets.only(right: 16),
-                                child: Text(
-                                  '>>>>',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                    const SizedBox(height: 24),
+                    const Text(
+                      "Mind Laundromat",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(2, 2),       // 그림자 위치 (x, y)
+                            blurRadius: 4.0,            // 그림자 번짐 정도
+                            color: Colors.black26,      // 그림자 색상
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "For the thoughts left unsaid —\nwe’re here to listen and help you through.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                        height: 1.5,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(2, 2),       // 그림자 위치 (x, y)
+                            blurRadius: 2.0,            // 그림자 번짐 정도
+                            color: Colors.black26,      // 그림자 색상
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    _maxDragDistance = width - 160;
+
+                    return Center(
+                      child: Container(
+                        width: width,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(40),
+                          color: Color(0xFFADCCEC),//Colors.white.withOpacity(0.2),
+                        ),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: ShaderMask(
+                                  shaderCallback: (Rect bounds) {
+                                    return const LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        Colors.white30,
+                                        Colors.white70,
+                                      ],
+                                    ).createShader(bounds);
+                                  },
+                                  blendMode: BlendMode.srcIn,
+                                  child: const Padding(
+                                    padding: EdgeInsets.only(right: 16),
+                                    child: Text(
+                                      '>>>>',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                        // 드래그 버튼
-                        Positioned(
-                          left: _dragPosition,
-                          child: GestureDetector(
-                            onPanUpdate: _onPanUpdate,
-                            onPanEnd: _onPanEnd,
-                            child: Container(
-                              width: 160,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(40),
-                                color: Colors.black,
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text(
-                                "Get Started",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                            Positioned(
+                              left: _dragPosition,
+                              child: GestureDetector(
+                                onPanUpdate: _onPanUpdate,
+                                onPanEnd: _onPanEnd,
+                                child: Container(
+                                  width: 200,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(40),
+                                    color: Colors.white,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Text(
+                                    "Get Started!",
+                                    style: TextStyle(
+                                      color: Color(0xFF446E9A),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
