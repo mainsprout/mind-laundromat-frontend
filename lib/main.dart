@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
         '/calendar': (context) => const CalendarScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/counsel': (context) => const CounselScreen(),
+        '/faq' : (context) => const FAQScreen(),
       },
     );
   }

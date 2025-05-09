@@ -33,7 +33,6 @@ class _SignInScreenState extends State<SignInScreen> {
       // 로그인 성공 후 SharedPreferences에 상태 저장
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true); // 로그인 상태 저장
-      await prefs.setString('userEmail', email);
       await prefs.setString('access_token', response['token']);  // 로그인 응답에서 받은 토큰
 
       // 로그인 후 홈 화면으로 이동

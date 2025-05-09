@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'start_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:mind_laundromat/services/api_service.dart';
+import 'start_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,32 +23,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('userEmail') ?? '';
-    final name = await fetchUserName(email);
+    final token = prefs.getString('access_token') ?? '';
 
-    setState(() {
-      _email = email;
-      _name = name;
-    });
-  }
-
-  Future<String> fetchUserName(String email) async {
-    await Future.delayed(Duration(milliseconds: 300));
-    return '홍길동';
-    // TODO: 실제 API 연동 시 아래 주석을 해제
-    /*
     try {
-      final response = await http.get(Uri.parse('https://your-api.com/user?email=$email'));
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/auth/info'),
+        headers: {'Authorization': token},
+      );
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['name'] ?? 'No Name';
+        final data = json.decode(response.body);
+        final userInfo = data['data'];
+
+        setState(() {
+          _email = userInfo['email'];
+          _name = userInfo['name'];
+        });
       } else {
-        throw Exception('Failed to load user data');
+        print('Failed to fetch user info. Status: ${response.statusCode}');
       }
     } catch (e) {
-      return 'Error: $e';
+      print('Error fetching user info: $e');
     }
-    */
   }
 
   Future<void> _logout() async {
@@ -60,47 +55,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => StartScreen()), // StartPage는 로그인 화면으로 변경
-            (Route<dynamic> route) => false, // 모든 이전 화면을 제거
+        MaterialPageRoute(builder: (context) => StartScreen()),
+            (Route<dynamic> route) => false,
       );
     }
   }
 
-  Widget buildInfoBox({required String label, required String value}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      margin: const EdgeInsets.only(bottom: 20),
-      constraints: const BoxConstraints(minHeight: 70),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey, width: 2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft, // 수직 중앙 + 왼쪽 정렬
-        child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: '$label: ',
-                style: const TextStyle(color: Colors.grey, fontSize: 18),
-              ),
-              TextSpan(
-                text: value,
-                style: const TextStyle(color: Colors.black, fontSize: 18),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  Future<void> _deleteAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token') ?? '';
+
+    try {
+      final response = await http.delete(
+        Uri.parse('http://10.0.2.2:8080/auth'),
+        headers: {'Authorization': token},
+      );
+
+      if (response.statusCode == 200) {
+        await prefs.clear();
+        await prefs.setBool('isLoggedIn', false);
+
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => StartScreen()),
+                (Route<dynamic> route) => false,
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to delete account. (${response.statusCode})")),
+        );
+      }
+    } catch (e) {
+      print('Error deleting account: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error occurred while deleting account.")),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 배경 흰색
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Profile'),
         backgroundColor: Colors.black,
@@ -109,26 +107,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 80),
-            buildInfoBox(label: 'Email', value: _email),
-            buildInfoBox(label: 'Name', value: _name),
-            const Spacer(),
+            const SizedBox(height: 60),
+            Text(
+              _name,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _email,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 40),
             GestureDetector(
               onTap: _logout,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.red, width: 2),
-                  borderRadius: BorderRadius.circular(12),
+              child: const Text(
+                'Log out',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.red,
+                  fontWeight: FontWeight.w500,
                 ),
-                child: const Center(
-                  child: Text(
-                    'Log Out',
-                    style: TextStyle(color: Colors.red, fontSize: 18),
-                  ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _deleteAccount,
+              child: const Text(
+                'Delete Account',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/faq');
+              },
+              child: const Text(
+                'FAQ',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
                 ),
               ),
             ),
