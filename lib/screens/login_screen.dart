@@ -9,27 +9,47 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            const Spacer(flex: 2),
+            const SizedBox(height: 40),
             Center(
               child: Image.asset(
-                'assets/logo.png',
-                width: 200,
-                height: 200,
-                fit: BoxFit.contain,
+                'assets/hanger.png',
+                //width: 120,
+                //height: 120,
+                //fit: BoxFit.contain,
               ),
             ),
-            const Spacer(flex: 1),
+            const SizedBox(height: 24),
+            const Text(
+              "Hang your thoughts.\nAir them out.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.0),
+              child: Text(
+                "We're here to help you clear your mind,\n"
+                    "understand your feelings, and feel a little\n"
+                    "lighter—one journal entry at a time.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  height: 1.5,
+                ),
+              ),
+            ),
+            const Spacer(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: Column(
@@ -43,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       backgroundColor: Colors.black87,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
                     child: const Text(
@@ -59,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       side: const BorderSide(color: Colors.black87),
                     ),
@@ -71,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            const Spacer(flex: 1),
+            const SizedBox(height: 32),
           ],
         ),
       ),
