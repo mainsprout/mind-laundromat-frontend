@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFADCCEC),
       body: SafeArea(
         child: Stack(
           children: [
@@ -55,9 +55,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   onTap: () {
                     Navigator.pushNamed(context, '/calendar');
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.calendar_today, size: 40),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.asset(
+                      'assets/icons/today.png', // 아이콘 이미지 경로
+                      width: 40,  // 원하는 크기 설정
+                      height: 40, // 원하는 크기 설정
+                    ),
                   ),
                 ),
               ),
@@ -74,9 +78,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   onTap: () {
                     Navigator.pushNamed(context, '/profile');
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.person, size: 40),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.asset(
+                      'assets/icons/account_circle.png', // 아이콘 이미지 경로
+                      width: 40,  // 원하는 크기 설정
+                      height: 40, // 원하는 크기 설정
+                    ),
                   ),
                 ),
               ),
@@ -84,32 +92,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
             // 중앙: 하트 애니메이션
             Center(
-              child: AnimatedBuilder(
-                animation: _rotationY,
-                builder: (context, child) {
-                  return Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(_rotationY.value),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        const Icon(
-                          Icons.favorite_border,
-                          size: 124,
-                          color: Colors.black,
-                        ),
-                        Icon(
-                          Icons.favorite,
-                          size: 120,
-                          color: _colorAnimation.value,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+              child: Image.asset('assets/home_screen.png'),
             ),
 
             // 하단 버튼
@@ -122,19 +105,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Navigator.pushNamed(context, '/counsel');
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
                 ),
-                child: const Text(
-                  'Doing Clean',
-                  style: TextStyle(fontSize: 18),
+                child: const Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Start a ',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'Mind Cleanse',
+                        style: TextStyle(
+                          color: Color(0xFF83B6E7),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
+
           ],
         ),
       ),
