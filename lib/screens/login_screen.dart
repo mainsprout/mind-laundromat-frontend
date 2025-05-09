@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/sign-up');
+                      Navigator.pushNamed(context, '/sign-in');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black87,
@@ -47,14 +47,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     child: const Text(
-                      'GET STARTED',
+                      'Sign In',
                       style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/sign-in');
+                      Navigator.pushNamed(context, '/sign-up');
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       side: const BorderSide(color: Colors.black87),
                     ),
                     child: const Text(
-                      'I HAVE AN ACCOUNT',
+                      'Sign Up',
                       style: TextStyle(fontSize: 16, color: Colors.black87),
                     ),
                   ),

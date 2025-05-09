@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -25,16 +26,57 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
-    // TODO: 로그인 API 호출 (백엔드 연동은 나중에 구현)
-    print("Email: $email, Password: $password");
+    // 로그인 API 호출 (백엔드 연동)
+    final response = await _loginApi(email, password);
 
-    // 로그인 성공 후 SharedPreferences에 상태 저장
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true); // 로그인 상태 저장
-    await prefs.setString('userEmail', email);
+    if (response != null && response['token'] != null) {
+      // 로그인 성공 후 SharedPreferences에 상태 저장
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true); // 로그인 상태 저장
+      await prefs.setString('userEmail', email);
+      await prefs.setString('access_token', response['token']);  // 로그인 응답에서 받은 토큰
 
-    // 로그인 후 홈 화면으로 이동
-    Navigator.pushReplacementNamed(context, '/home');
+      // 로그인 후 홈 화면으로 이동
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // 로그인 실패 처리
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid email or password")),
+      );
+    }
+  }
+
+  // 로그인 API 호출
+  Future<Map<String, dynamic>?> _loginApi(String email, String password) async {
+    final url = 'http://10.0.2.2:8080/login';
+
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse(url));
+      request.fields['username'] = email;
+      request.fields['password'] = password;
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('Status: ${response.statusCode}');
+      print('Headers: ${response.headers}');
+
+      if (response.statusCode == 200) {
+        final token = response.headers['authorization'];
+        if (token != null && token.startsWith('Bearer ')) {
+          return {'token': token}; // Bearer 포함해서 저장 (필요시 split 가능)
+        } else {
+          print('Token not found in headers.');
+          return null;
+        }
+      } else {
+        print('Failed with status ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return null;
+    }
   }
 
   @override
@@ -89,8 +131,6 @@ class _SignInScreenState extends State<SignInScreen> {
                   foregroundColor: Colors.white,
                 ),
               ),
-
-              //const SizedBox(height: 16),
 
               // 회원가입 화면으로 이동
               TextButton(
