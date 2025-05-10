@@ -44,9 +44,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        /*
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Sign-up successful. Please log in.")),
         );
+         */
         Navigator.pushReplacementNamed(context, '/sign-in');
       } else {
         final error = jsonDecode(response.body);

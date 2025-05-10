@@ -30,8 +30,13 @@ class _SignInScreenState extends State<SignInScreen> {
 
     if (response != null && response['token'] != null) {
       final prefs = await SharedPreferences.getInstance();
+
+      // 'Bearer '를 제거하여 토큰만 저장
+      String token = response['token']?.replaceFirst('Bearer ', '') ?? '';
+
+      // 토큰 저장
       await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('access_token', response['token']);
+      await prefs.setString('access_token', token);
 
       Navigator.pushAndRemoveUntil(
         context,

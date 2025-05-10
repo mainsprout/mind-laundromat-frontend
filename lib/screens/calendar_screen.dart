@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:mind_laundromat/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:mind_laundromat/screens/diary_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mind_laundromat/models/diary.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -16,24 +20,116 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime? _selectedDay;
 
   List<DateTime> diaryDays = [];
+  List<Diary> diaries = [];
 
-  List<String> getDiariesForDay(DateTime day) {
-    // TODO: 실제 다이어리 API 연동 전까지는 항상 임시 데이터 반환
-    return [
-      '오늘은 좋은 하루였어요.',
-      '산책하면서 기분이 좋아졌어요.',
-      'Flutter 공부도 했어요.',
-    ];
+  // 월별 다이어리가 기록된 날짜
+  Future<void> fetchDiaryDatesForMonth(DateTime month) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token') ?? '';
+
+      if (accessToken.isEmpty) {
+        throw Exception("Access token is not available.");
+      }
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/cbt/month/list'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          //'localDate': '2025-05-01',
+          'localDate': DateFormat('yyyy-MM-dd').format(month), // 선택된 월의 첫 번째 날짜
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        if (data['code'] == 'S201') {
+          // 서버에서 받은 날짜 데이터
+          List<String> dateStrings = List<String>.from(data['data']);
+          setState(() {
+            diaryDays = dateStrings.map((date) => DateTime.parse(date)).toList();
+          });
+        } else {
+          throw Exception(data['message']);
+        }
+      } else {
+        throw Exception('Failed to load diary dates');
+      }
+    } catch (e) {
+      // 오류 처리
+      print('Error fetching diary dates: $e');
+    }
+  }
+
+  // 날짜별 다이어리들
+  Future<void> fetchDiaryForDay(DateTime day) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token') ?? '';
+
+      if (accessToken.isEmpty) {
+        throw Exception("Access token is not available.");
+      }
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/cbt/list'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'localDate': DateFormat('yyyy-MM-dd').format(day), // 선택한 날짜
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        if (data['code'] == 'S201') {
+          // 서버에서 받은 다이어리 데이터
+          List<dynamic> diaryList = data['data'];
+          setState(() {
+            diaries = diaryList.map((e) => Diary.fromJson(e)).toList();
+          });
+        } else {
+          throw Exception(data['message']);
+        }
+      } else {
+        throw Exception('Failed to load diary data');
+      }
+    } catch (e) {
+      // 오류 처리
+      print('Error fetching diary for day: $e');
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    fetchDiaryDatesForMonth(_focusedDay); // 앱이 시작될 때 현재 월의 다이어리 날짜 데이터 가져오기
+    fetchDiaryForDay(_focusedDay); // 기본적으로 현재 날짜의 다이어리 정보 불러오기
+  }
 
-    // TODO: 임시로 다이어리가 기록된 날짜를 추가
-    diaryDays = [
-      DateTime(2025, 5, 4), // 4일
-    ];
+  // 월이 바뀌면 다이어리 날짜 데이터를 다시 받아옴
+  void _onMonthChanged(DateTime focusedMonth) {
+    setState(() {
+      _focusedDay = focusedMonth;  // focusedDay를 바꿔주고
+    });
+    fetchDiaryDatesForMonth(focusedMonth); // 월에 맞는 데이터 새로 불러오기
+  }
+
+  // 날짜가 선택되면 해당 날짜에 대한 다이어리를 불러옴
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      _selectedDay = selectedDay;
+      _focusedDay = focusedDay;
+    });
+    // 선택된 날짜에 대한 다이어리 정보 가져오기
+    fetchDiaryForDay(selectedDay);
   }
 
   bool isDiaryDay(DateTime day) {
@@ -74,14 +170,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 selectedDayPredicate: (day) {
                   return isSameDay(_selectedDay, day);
                 },
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                  });
+                onDaySelected: _onDaySelected,
+                onPageChanged: (focusedMonth) {
+                  _onMonthChanged(focusedMonth); // 월이 변경될 때마다 데이터 불러오기
                 },
-                // 이벤트 로더 설정
-                //eventLoader: getEventsForDay,
                 headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
@@ -131,7 +223,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     final isToday = isSameDay(date, DateTime.now());
                     final isDiary = isDiaryDay(date);
 
-                    // 기본 배경 스타일을 결정 (오늘이거나 다이어리인 경우)
                     BoxDecoration? baseDecoration;
                     TextStyle? baseTextStyle;
 
@@ -157,7 +248,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     return Stack(
                       alignment: Alignment.center,
                       children: [
-                        // 아래에 오늘/다이어리 스타일
                         if (baseDecoration != null)
                           Container(
                             margin: const EdgeInsets.all(6.0),
@@ -169,14 +259,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             ),
                           )
                         else
-                        // 기본 날짜 스타일
                           Text(date.day.toString()),
 
-                        // 위에 반투명한 흰 배경 + 파란 테두리
                         Container(
                           margin: const EdgeInsets.all(6.0),
                           decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(100), // 약간의 투명도
+                            color: Colors.white.withAlpha(100),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: const Color(0xFF6BA8E6),
@@ -188,10 +276,65 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     );
                   },
                 ),
-
               ),
             ),
             const SizedBox(height: 16.0),
+            Expanded(
+              child: ListView.builder(
+                itemCount: diaries.length,
+                itemBuilder: (context, index) {
+                  final diary = diaries[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DiaryDetailScreen(diaryId: diary.diaryId),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6.0),
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                DateFormat('HH:mm').format(diary.regDate), // 시와 분 표시
+                                style: const TextStyle(
+                                  fontSize: 14.0,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              SizedBox(height: 4.0),
+                              Text(
+                                diary.summation,
+                                style: const TextStyle(fontSize: 16.0),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            )
+            /*
             Expanded(
               child: ListView.builder(
                 itemCount: getDiariesForDay(_selectedDay ?? _focusedDay).length,
@@ -202,7 +345,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          //TODO: 다이어리 아이디 넘겨줘야함
                           builder: (_) => DiaryDetailScreen(diaryContent: diary),
                         ),
                       );
@@ -230,7 +372,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 },
               ),
             ),
-
+            */
           ],
         ),
       ),

@@ -31,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final response = await http.get(
         Uri.parse('http://10.0.2.2:8080/auth/info'),
-        headers: {'Authorization': token},
+        headers: {'Authorization': 'Bearer $token'}, // 'Bearer ' 붙여서 보냄
       );
 
       if (response.statusCode == 200) {
@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final response = await http.delete(
         Uri.parse('http://10.0.2.2:8080/auth'),
-        headers: {'Authorization': token},
+        headers: {'Authorization': 'Bearer $token'}, // 'Bearer ' 붙여서 보냄
       );
 
       if (response.statusCode == 200) {
