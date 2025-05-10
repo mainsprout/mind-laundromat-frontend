@@ -10,9 +10,19 @@ class CounselScreen extends StatefulWidget {
 
 class _CounselScreenState extends State<CounselScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> _messages = []; // role: user or bot, content
+  final List<Map<String, String>> _messages = [];
 
   bool _isSending = false;
+
+  // 초기 메시지
+  @override
+  void initState() {
+    super.initState();
+    _messages.add({
+      'role': 'bot',
+      'content': 'Hello! What are you worried about? Feel free to tell me. 😊',
+    });
+  }
 
   Future<void> _sendMessage() async {
     final userInput = _controller.text.trim();
@@ -25,27 +35,16 @@ class _CounselScreenState extends State<CounselScreen> {
     });
 
     try {
-      // API 호출 (임시로 지연 후 고정 응답)
+      // TODO: api 연동
       await Future.delayed(const Duration(seconds: 1));
-      final botResponse = '안녕하세요! 무엇을 도와드릴까요?'; // ← 여기에 실제 API 응답 넣기
-
-      // 실제 API 호출 예시
-      /*
-      final response = await http.post(
-        Uri.parse('https://your-api.com/chat'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'message': userInput}),
-      );
-      final data = jsonDecode(response.body);
-      final botResponse = data['reply'] ?? '답변을 가져오지 못했습니다.';
-      */
+      final botResponse = 'You are truly the best.';
 
       setState(() {
         _messages.add({'role': 'bot', 'content': botResponse});
       });
     } catch (e) {
       setState(() {
-        _messages.add({'role': 'bot', 'content': '오류가 발생했습니다.'});
+        _messages.add({'role': 'bot', 'content': 'An error occurred.'});
       });
     } finally {
       setState(() {
@@ -56,20 +55,52 @@ class _CounselScreenState extends State<CounselScreen> {
 
   Widget _buildMessage(Map<String, String> message) {
     final isUser = message['role'] == 'user';
+
     return Container(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        constraints: const BoxConstraints(maxWidth: 250),
-        decoration: BoxDecoration(
-          color: isUser ? Colors.black : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          message['content'] ?? '',
-          style: TextStyle(color: isUser ? Colors.white : Colors.black),
-        ),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment:
+        isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if (!isUser)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/emotion/calm.png',
+                  width: 32,
+                  height: 32,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              constraints: const BoxConstraints(maxWidth: 250),
+              decoration: BoxDecoration(
+                color: isUser
+                    ? const Color(0xFFFEFEFE)
+                    : const Color(0xFFADCCEC),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(isUser ? 12 : 0),
+                  topRight: Radius.circular(isUser ? 0 : 12),
+                  bottomLeft: const Radius.circular(12),
+                  bottomRight: const Radius.circular(12),
+                ),
+              ),
+              child: Text(
+                message['content'] ?? '',
+                style: TextStyle(
+                  color:
+                  isUser ? const Color(0xFF313131) : Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -77,8 +108,8 @@ class _CounselScreenState extends State<CounselScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: const CustomAppBar(title: 'Counsel'),
+      backgroundColor: const Color(0xFFEDEDED),
+      appBar: const CustomAppBar(title: 'Counsel', titleColor: Colors.black, backgroundColor: Colors.white,),
       body: Column(
         children: [
           Expanded(
@@ -97,24 +128,49 @@ class _CounselScreenState extends State<CounselScreen> {
               padding: EdgeInsets.only(bottom: 12),
               child: CircularProgressIndicator(),
             ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.fromLTRB(12, 16, 12, 32),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: '메시지를 입력하세요...',
-                      border: OutlineInputBorder(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: 'Send Message...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: _sendMessage,
-                  color: Colors.black,
+                GestureDetector(
+                  onTap: _sendMessage,
+                  child: Transform.rotate(
+                    angle: -0.2,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFADCCEC),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
