@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:mind_laundromat/screens/distortion_detail.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -90,9 +92,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
 
-            // 중앙: 하트 애니메이션
+            // 중앙 : 이미지
             Center(
-              child: Image.asset('assets/home_screen.png'),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DistortionDetail()), // 이동할 페이지로 변경
+                  );
+                },
+                child: Image.asset('assets/home_screen.png'),
+              ),
             ),
 
             // 하단 버튼

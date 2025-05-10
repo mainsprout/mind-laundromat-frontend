@@ -28,7 +28,8 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfileScreen(),
         '/counsel': (context) => const CounselScreen(),
         '/faq' : (context) => const FAQScreen(),
-        '/select-emotion' : (context) => const SelectEmotionScreen()
+        '/select-emotion' : (context) => const SelectEmotionScreen(),
+        '/distortion-details' : (context) => const DistortionDetail()
       },
     );
   }
