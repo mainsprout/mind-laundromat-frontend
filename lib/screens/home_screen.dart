@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               right: 32,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/counsel');
+                  Navigator.pushNamed(context, '/select-emotion');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),

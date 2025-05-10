@@ -7,5 +7,6 @@ export 'home_screen.dart';
 export 'login_screen.dart';
 export 'start_screen.dart';
 export 'faq_screen.dart';
+export 'select_emotion_screen.dart';
 export 'forgot_password_screen.dart';
 export 'diary_detail_screen.dart';

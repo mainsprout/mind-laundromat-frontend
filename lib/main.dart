@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mind_laundromat/screens/select_emotion_screen.dart';
 import 'screens/screens.dart';
 
 void main() {
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfileScreen(),
         '/counsel': (context) => const CounselScreen(),
         '/faq' : (context) => const FAQScreen(),
+        '/select-emotion' : (context) => const SelectEmotionScreen()
       },
     );
   }
