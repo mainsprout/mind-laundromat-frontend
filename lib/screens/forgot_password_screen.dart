@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mind_laundromat/widgets/custom_app_bar.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
@@ -6,11 +7,8 @@ class ForgotPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Forgot Password"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
+      appBar: CustomAppBar(title: '', backgroundColor: Color(0xFFADCCEC),),
+      backgroundColor: Color(0xFFADCCEC),
       body: const Center(
         child: Padding(
           padding: EdgeInsets.all(24.0),

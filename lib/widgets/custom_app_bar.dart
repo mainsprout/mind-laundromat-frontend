@@ -4,22 +4,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onBack;
   final Color titleColor;
-  final Color? backgroundColor; // ← nullable로 변경
+  final Color? backgroundColor;
 
   const CustomAppBar({
     super.key,
     required this.title,
     this.onBack,
     this.titleColor = Colors.black,
-    this.backgroundColor, // ← 기본값은 나중에 null 처리로 대체
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: preferredSize.height,
-      color: backgroundColor ?? Colors.grey[200], // ← null일 경우 기본 회색
-      padding: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 10),
+      color: backgroundColor ?? Colors.grey[200],
+      padding: const EdgeInsets.only(top: 48, left: 30, right: 30, bottom: 0),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -28,8 +28,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: GestureDetector(
               onTap: onBack ?? () => Navigator.of(context).pop(),
               child: Container(
-                width: 44,
-                height: 44,
+                width: 60,
+                height: 60,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
@@ -48,7 +48,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             title,
             style: TextStyle(
               color: titleColor,
-              fontSize: 22,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -58,5 +58,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(110);
+  Size get preferredSize => const Size.fromHeight(140);
 }

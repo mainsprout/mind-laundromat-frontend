@@ -77,7 +77,7 @@ class _StartScreenState extends State<StartScreen> {
             left: 0,
             right: 0,
             child: Image.asset(
-              'assets/back_circle.png',
+              'assets/images/back_circle.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -92,7 +92,7 @@ class _StartScreenState extends State<StartScreen> {
                 Column(
                   children: [
                     Image.asset(
-                      'assets/start_logo.png',
+                      'assets/images/start_logo.png',
                       width: 200,
                     ),
                     const SizedBox(height: 24),
@@ -163,26 +163,13 @@ class _StartScreenState extends State<StartScreen> {
                                   child: Padding(
                                     padding: const EdgeInsets.only(right: 16),
                                     child: Image.asset(
-                                      'assets/arrow_hint.png',
+                                      'assets/icons/arrow_hint.png',
                                       //width: 60, // 원하는 크기로 조절하세요
                                       //height: 20,
                                       //fit: BoxFit.contain,
                                       //color: Colors.white70, // 필요시 색 조정 (예: 텍스트 느낌 유지)
                                     ),
                                   ),
-
-                                  /*
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(right: 16),
-                                    child: Text(
-                                      '>>>>',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  */
                                 ),
                               ),
                             ),

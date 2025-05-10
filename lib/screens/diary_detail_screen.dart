@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:mind_laundromat/models/diary.dart';
+import 'package:mind_laundromat/widgets/custom_app_bar.dart';
 
 class DiaryDetailScreen extends StatefulWidget {
   final int diaryId;
@@ -60,9 +61,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Diary Detail'),
-      ),
+      appBar: const CustomAppBar(title: 'Diary'),
+      backgroundColor: Colors.white,
       body: _diary == null
           ? const Center(child: CircularProgressIndicator())
           : Padding(

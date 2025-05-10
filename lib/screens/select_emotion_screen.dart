@@ -7,11 +7,11 @@ class SelectEmotionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final emotions = [
-      {'name': 'happiness', 'path': 'assets/emotion/happiness.png'},
-      {'name': 'sadness', 'path': 'assets/emotion/sadness.png'},
-      {'name': 'anger', 'path': 'assets/emotion/anger.png'},
-      {'name': 'neutral', 'path': 'assets/emotion/neutral.png'},
-      {'name': 'calm', 'path': 'assets/emotion/calm.png'},
+      {'name': 'happiness', 'path': 'assets/emotions/happiness.png'},
+      {'name': 'sadness', 'path': 'assets/emotions/sadness.png'},
+      {'name': 'anger', 'path': 'assets/emotions/anger.png'},
+      {'name': 'neutral', 'path': 'assets/emotions/neutral.png'},
+      {'name': 'calm', 'path': 'assets/emotions/calm.png'},
     ];
 
     Widget emotionItem(Map<String, String> emotion, String routeName) {
@@ -36,7 +36,7 @@ class SelectEmotionScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: const CustomAppBar(title: 'Select Emotion'),
+      appBar: const CustomAppBar(title: ''),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
