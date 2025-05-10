@@ -69,7 +69,7 @@ class _CounselScreenState extends State<CounselScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
-                  'assets/emotion/calm.png',
+                  'assets/emotions/calm.png',
                   width: 32,
                   height: 32,
                   fit: BoxFit.cover,
@@ -109,7 +109,7 @@ class _CounselScreenState extends State<CounselScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
-      appBar: const CustomAppBar(title: 'Counsel', titleColor: Colors.black, backgroundColor: Colors.white,),
+      appBar: const CustomAppBar(title: ''),
       body: Column(
         children: [
           Expanded(

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-
 import 'package:mind_laundromat/screens/distortion_detail.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -79,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     MaterialPageRoute(builder: (context) => DistortionDetail()), // 이동할 페이지로 변경
                   );
                 },
-                child: Image.asset('assets/home_screen.png'),
+                child: Image.asset('assets/images/home_screen.png'),
               ),
             ),
 
@@ -90,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               right: 32,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/select-emotion');
+                  Navigator.pushNamed(context, '/select-emotions');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -123,7 +121,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
               ),
             ),
-
           ],
         ),
       ),

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:mind_laundromat/screens/diary_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mind_laundromat/models/diary.dart';
+import 'package:mind_laundromat/utils/emotion_utils.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -18,6 +19,9 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+
+  final double circleMargin = 4.0;
+  final double fontSize = 14.0;
 
   List<DateTime> diaryDays = [];
   List<Diary> diaries = [];
@@ -39,7 +43,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          //'localDate': '2025-05-01',
           'localDate': DateFormat('yyyy-MM-dd').format(month), // 선택된 월의 첫 번째 날짜
         }),
       );
@@ -146,47 +149,66 @@ class _CalendarScreenState extends State<CalendarScreen> {
       appBar: const CustomAppBar(title: 'Calendar'),
       backgroundColor: Colors.grey[200],
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
             // White box wrapping the calendar with some padding at top and bottom
             Container(
+              //margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0), // 바깥여백
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(50.0),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 8.0), // Add vertical padding
+              padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 30.0), // 내부 여백
+
               child: TableCalendar(
                 firstDay: DateTime.utc(2020, 1, 1),
                 lastDay: DateTime.utc(2030, 12, 31),
                 focusedDay: _focusedDay,
-                selectedDayPredicate: (day) {
-                  return isSameDay(_selectedDay, day);
-                },
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onDaySelected: _onDaySelected,
-                onPageChanged: (focusedMonth) {
-                  _onMonthChanged(focusedMonth); // 월이 변경될 때마다 데이터 불러오기
-                },
-                headerStyle: const HeaderStyle(
+                onPageChanged: _onMonthChanged,
+
+                headerStyle: HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
+                  headerPadding: EdgeInsets.only(bottom: 16),
+                  leftChevronIcon: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey[300]!, width: 1.5),
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(
+                      Icons.chevron_left,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                  rightChevronIcon: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey[300]!, width: 1.5),
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                  leftChevronMargin: const EdgeInsets.only(right: 20.0),
+                  rightChevronMargin: const EdgeInsets.only(left: 20.0),
                 ),
+
+                //rowHeight: 48.0,
+                daysOfWeekHeight: 30,
                 calendarStyle: CalendarStyle(
-                  todayDecoration: BoxDecoration(
-                    color: Color(0xFFE2E8ED), // Today's background color
-                    shape: BoxShape.circle,
-                  ),
-                  todayTextStyle: TextStyle(
-                    color: Color(0xFF446E9A), // Today's text color
-                  ),
+                  cellMargin: EdgeInsets.zero,
+                  outsideDaysVisible: false,
                 ),
+
+
                 calendarBuilders: CalendarBuilders(
                   dowBuilder: (context, day) {
                     if (day.weekday == DateTime.sunday) {
@@ -198,11 +220,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                       );
                     }
+                    return null;
                   },
+
                   defaultBuilder: (context, day, focusedDay) {
                     if (isDiaryDay(day)) {
                       return Container(
-                        margin: const EdgeInsets.all(6.0),
+                        margin: EdgeInsets.all(circleMargin),
                         decoration: BoxDecoration(
                           color: const Color(0xFF6BA8E6),
                           shape: BoxShape.circle,
@@ -210,59 +234,64 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         alignment: Alignment.center,
                         child: Text(
                           day.day.toString(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
+                            fontSize: fontSize,
                           ),
                         ),
                       );
                     }
                     return null;
                   },
+
                   selectedBuilder: (context, date, focusedDay) {
                     final isToday = isSameDay(date, DateTime.now());
                     final isDiary = isDiaryDay(date);
 
-                    BoxDecoration? baseDecoration;
-                    TextStyle? baseTextStyle;
+                    BoxDecoration? decoration;
+                    TextStyle? textStyle;
 
-                    if (isDiary) {
-                      baseDecoration = BoxDecoration(
-                        color: const Color(0xFF6BA8E6),
-                        shape: BoxShape.circle,
-                      );
-                      baseTextStyle = const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      );
-                    } else if (isToday) {
-                      baseDecoration = BoxDecoration(
+                    if (isToday) {
+                      decoration = BoxDecoration(
                         color: const Color(0xFFE2E8ED),
                         shape: BoxShape.circle,
                       );
-                      baseTextStyle = const TextStyle(
-                        color: Color(0xFF446E9A),
+                      textStyle = TextStyle(
+                          color: Color(0xFF446E9A),
+                          fontWeight: FontWeight.bold,
+                          fontSize: fontSize,
+                      );
+                    } else if (isDiary) {
+                      decoration = BoxDecoration(
+                        color: const Color(0xFF6BA8E6),
+                        shape: BoxShape.circle,
+                      );
+                      textStyle = TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSize,
                       );
                     }
 
-                    return Stack(
+                      return Stack(
                       alignment: Alignment.center,
                       children: [
-                        if (baseDecoration != null)
+                        if (decoration != null)
                           Container(
-                            margin: const EdgeInsets.all(6.0),
-                            decoration: baseDecoration,
+                            margin: EdgeInsets.all(circleMargin),
+                            decoration: decoration,
                             alignment: Alignment.center,
                             child: Text(
                               date.day.toString(),
-                              style: baseTextStyle,
+                              style: textStyle,
                             ),
                           )
                         else
                           Text(date.day.toString()),
 
                         Container(
-                          margin: const EdgeInsets.all(6.0),
+                          margin: EdgeInsets.all(circleMargin),
                           decoration: BoxDecoration(
                             color: Colors.white.withAlpha(100),
                             shape: BoxShape.circle,
@@ -275,9 +304,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ],
                     );
                   },
+
+                  todayBuilder: (context, day, focusedDay) {
+                    return Container(
+                      margin: EdgeInsets.all(circleMargin),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8ED),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        day.day.toString(),
+                        style: TextStyle(
+                          color: Color(0xFF446E9A),
+                          fontWeight: FontWeight.bold,
+                          fontSize: fontSize,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
+
             const SizedBox(height: 16.0),
             Expanded(
               child: ListView.builder(
@@ -294,38 +343,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       );
                     },
                     child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 6.0),
-                      padding: const EdgeInsets.all(12.0),
+                      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
+                      padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
+                        borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                DateFormat('HH:mm').format(diary.regDate), // 시와 분 표시
-                                style: const TextStyle(
-                                  fontSize: 14.0,
-                                  color: Colors.grey,
+                          // 텍스트 영역
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  DateFormat('HH:mm').format(diary.regDate),
+                                  style: const TextStyle(
+                                    fontSize: 14.0,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 4.0),
-                              Text(
-                                diary.summation,
-                                style: const TextStyle(fontSize: 16.0),
-                              ),
-                            ],
+                                const SizedBox(height: 8.0),
+                                Text(
+                                  diary.summation,
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
+                                const SizedBox(height: 8.0),
+                              ],
+                            ),
+                          ),
+
+                          // 감정 이미지
+                          Container(
+                            width: 56,
+                            height: 56,
+                            padding: const EdgeInsets.all(4.0),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: getEmotionImage(diary.emotionType, size: 36), // 이미지 크기 조절
                           ),
                         ],
                       ),
@@ -334,45 +393,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 },
               ),
             )
-            /*
-            Expanded(
-              child: ListView.builder(
-                itemCount: getDiariesForDay(_selectedDay ?? _focusedDay).length,
-                itemBuilder: (context, index) {
-                  final diary = getDiariesForDay(_selectedDay ?? _focusedDay)[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DiaryDetailScreen(diaryContent: diary),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 6.0),
-                      padding: const EdgeInsets.all(12.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        diary,
-                        style: const TextStyle(fontSize: 16.0),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            */
           ],
         ),
       ),
