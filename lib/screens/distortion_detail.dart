@@ -29,6 +29,7 @@ class _DistortionDetailState extends State<DistortionDetail> {
   ];
 
   int selectedIndex = 13; // 기본으로 OVERGENERALIZATION (index 13)
+  bool isDescription = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +52,19 @@ class _DistortionDetailState extends State<DistortionDetail> {
                       'assets/distortion_card/card_shadow.png',
                       height: 400,
                     ),
-                    Image.asset(
-                      'assets/distortion_card/${distortionNames[selectedIndex]}.png',
-                      height: 370,
+                    GestureDetector(
+                      onTap: () {
+                        // 클릭 시 이미지 변경
+                        setState(() {
+                          isDescription = !isDescription; // 클릭 시 설명 이미지로 전환
+                        });
+                      },
+                      child: Image.asset(
+                        isDescription
+                            ? 'assets/distortion_card/description/${distortionNames[selectedIndex]}.png' // 설명 이미지
+                            : 'assets/distortion_card/${distortionNames[selectedIndex]}.png', // 원래 이미지
+                        height: 370,
+                      ),
                     ),
                   ],
                 ),
