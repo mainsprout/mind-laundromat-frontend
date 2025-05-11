@@ -1,31 +1,37 @@
 import 'package:flutter/material.dart';
-
 import '../widgets/custom_app_bar.dart';
 
-class DistortionDetail extends StatelessWidget {
+class DistortionDetail extends StatefulWidget {
   const DistortionDetail({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<String> iconPaths = [
-      'assets/distortion_card/icons/BLACK_AND_WHITE_THINKING.png',
-      'assets/distortion_card/icons/BLAMING.png',
-      'assets/distortion_card/icons/CONTROL_FALLACY.png',
-      'assets/distortion_card/icons/DISQUALIFYING_THE_POSITIVE.png',
-      'assets/distortion_card/icons/EMOTIONAL_REASONING.png',
-      'assets/distortion_card/icons/FALLACY_OF_FAIRNESS.png',
-      'assets/distortion_card/icons/FORTUNE_TELLING.png',
-      'assets/distortion_card/icons/JUMPING_TO_CONCLUSIONS.png',
-      'assets/distortion_card/icons/LABELING.png',
-      'assets/distortion_card/icons/MAGNIFICATION.png',
-      'assets/distortion_card/icons/MENTAL_FILTERING.png',
-      'assets/distortion_card/icons/MIND_READING.png',
-      'assets/distortion_card/icons/MINIMIZATION.png',
-      'assets/distortion_card/icons/OVERGENERALIZATION.png',
-      'assets/distortion_card/icons/PERSONALIZATION.png',
-      'assets/distortion_card/icons/SHOULD_STATEMENTS.png',
-    ];
+  State<DistortionDetail> createState() => _DistortionDetailState();
+}
 
+class _DistortionDetailState extends State<DistortionDetail> {
+  final List<String> distortionNames = [
+    'BLACK_AND_WHITE_THINKING',
+    'BLAMING',
+    'CONTROL_FALLACY',
+    'DISQUALIFYING_THE_POSITIVE',
+    'EMOTIONAL_REASONING',
+    'FALLACY_OF_FAIRNESS',
+    'FORTUNE_TELLING',
+    'JUMPING_TO_CONCLUSIONS',
+    'LABELING',
+    'MAGNIFICATION',
+    'MENTAL_FILTERING',
+    'MIND_READING',
+    'MINIMIZATION',
+    'OVERGENERALIZATION',
+    'PERSONALIZATION',
+    'SHOULD_STATEMENTS',
+  ];
+
+  int selectedIndex = 13; // 기본으로 OVERGENERALIZATION (index 13)
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: const CustomAppBar(title: 'My Distortion'),
@@ -34,12 +40,30 @@ class DistortionDetail extends StatelessWidget {
         children: [
           const SizedBox(height: 20),
           Center(
-            child: Image.asset(
-              'assets/distortion_card/card_shadow.png',
-              height: 400,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // 카드 이미지 (그림자 + 카드)
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/distortion_card/card_shadow.png',
+                      height: 400,
+                    ),
+                    Image.asset(
+                      'assets/distortion_card/${distortionNames[selectedIndex]}.png',
+                      height: 370,
+                    ),
+                  ],
+                ),
+                // 화살표는 생략
+              ],
             ),
           ),
           const SizedBox(height: 20),
+
+          /// GridView
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -50,7 +74,7 @@ class DistortionDetail extends StatelessWidget {
                 },
                 child: GridView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: iconPaths.length,
+                  itemCount: distortionNames.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     crossAxisSpacing: 12,
@@ -59,13 +83,15 @@ class DistortionDetail extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return GestureDetector(
                       onTap: () {
-                        debugPrint('Box $index clicked');
+                        setState(() {
+                          selectedIndex = index;
+                        });
                       },
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Colors.black12,
                               blurRadius: 4,
@@ -75,7 +101,9 @@ class DistortionDetail extends StatelessWidget {
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(iconPaths[index]),
+                          child: Image.asset(
+                            'assets/distortion_card/icons/${distortionNames[index]}.png',
+                          ),
                         ),
                       ),
                     );
