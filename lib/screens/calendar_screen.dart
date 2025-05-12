@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:mind_laundromat/screens/diary_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mind_laundromat/models/diary.dart';
-import 'package:mind_laundromat/utils/emotion_utils.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 
 class CalendarScreen extends StatefulWidget {
