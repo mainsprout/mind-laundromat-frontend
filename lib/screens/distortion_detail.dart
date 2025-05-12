@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
+import 'dart:math';
 
 class DistortionDetail extends StatefulWidget {
   const DistortionDetail({super.key});
@@ -64,28 +65,67 @@ class _DistortionDetailState extends State<DistortionDetail> {
                       'assets/distortion_card/card_shadow.png',
                       height: 400,
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        // 클릭 시 이미지 변경
-                        setState(() {
-                          isDescription = !isDescription; // 클릭 시 설명 이미지로 전환
-                        });
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 500),
+                      transitionBuilder: (Widget child, Animation<double> animation) {
+                        final rotate = Tween(begin: pi, end: 0.0).animate(animation);
+
+                        return AnimatedBuilder(
+                          animation: rotate,
+                          child: child,
+                          builder: (context, child) {
+                            final isUnder = (ValueKey(isDescription) != child!.key);
+                            var tilt = (animation.value - 0.5).abs() - 0.5;
+                            tilt *= isUnder ? -0.003 : 0.003;
+                            final value = isUnder ? min(rotate.value, pi / 2) : rotate.value;
+
+                            return Transform(
+                              transform: Matrix4.rotationY(value)..setEntry(3, 0, tilt),
+                              alignment: Alignment.center,
+                              child: child,
+                            );
+                          },
+                        );
                       },
-                      child: Image.asset(
-                        isDescription
-                            ? 'assets/distortion_card/description/${distortionNames[selectedIndex]}.png' // 설명 이미지
-                            : 'assets/distortion_card/${distortionNames[selectedIndex]}.png', // 원래 이미지
-                        height: 370,
+                      layoutBuilder: (widget, list) => Stack(children: [if (widget != null) widget, ...list]),
+                      child: GestureDetector(
+                        key: ValueKey(isDescription),
+                        onTap: () {
+                          setState(() {
+                            isDescription = !isDescription;
+                          });
+                        },
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Image.asset(
+                              isDescription
+                                  ? 'assets/distortion_card/description/${distortionNames[selectedIndex]}.png'
+                                  : 'assets/distortion_card/${distortionNames[selectedIndex]}.png',
+                              height: 370,
+                            ),
+                            Positioned(
+                              bottom: 30,
+                              child: Image.asset(
+                                'assets/icons/flip.png',
+                                width: 25,
+                                height: 25,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    Positioned(
-                      bottom: 30,
-                      child: Image.asset(
-                        'assets/icons/flip.png',
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
+
+
+                    // Positioned(
+                    //   bottom: 30,
+                    //   child: Image.asset(
+                    //     'assets/icons/flip.png',
+                    //     width: 25,
+                    //     height: 25,
+                    //   ),
+                    // ),
                   ],
                 ),
                 // 왼쪽 화살표
