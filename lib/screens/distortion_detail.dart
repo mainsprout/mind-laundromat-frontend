@@ -116,16 +116,6 @@ class _DistortionDetailState extends State<DistortionDetail> {
                         ),
                       ),
                     ),
-
-
-                    // Positioned(
-                    //   bottom: 30,
-                    //   child: Image.asset(
-                    //     'assets/icons/flip.png',
-                    //     width: 25,
-                    //     height: 25,
-                    //   ),
-                    // ),
                   ],
                 ),
                 // 왼쪽 화살표
