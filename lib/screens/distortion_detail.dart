@@ -234,6 +234,7 @@ class _DistortionDetailState extends State<DistortionDetail> {
                       onPressed: () {
                         debugPrint('Left arrow clicked');
                         _changeImage(false);
+                        enableFlipAnimation = false;
                         isDescription=false;
                       },
                     ),
@@ -261,6 +262,7 @@ class _DistortionDetailState extends State<DistortionDetail> {
                       icon: const Icon(Icons.arrow_right),
                       onPressed: () {
                         debugPrint('Right arrow clicked');
+                        enableFlipAnimation=false;
                         isDescription=false;
                         _changeImage(true);
                       },
