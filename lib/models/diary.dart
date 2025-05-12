@@ -11,6 +11,10 @@ class Diary {
   final String solution;
   final List<String> distortionType;
 
+  // Mutable properties for local time
+  DateTime? localRegDate;
+  DateTime? localModDate;
+
   Diary({
     required this.diaryId,
     required this.beforeContent,
@@ -36,5 +40,11 @@ class Diary {
       solution: json['solution'],
       distortionType: List<String>.from(json['distortion_type']),
     );
+  }
+
+  // Method to update local times
+  void updateLocalTimes() {
+    localRegDate = regDate.toLocal();
+    localModDate = modDate.toLocal();
   }
 }

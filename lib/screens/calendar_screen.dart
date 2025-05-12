@@ -8,6 +8,7 @@ import 'package:mind_laundromat/screens/diary_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mind_laundromat/models/diary.dart';
 import 'package:mind_laundromat/utils/emotion_utils.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -26,6 +27,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   List<DateTime> diaryDays = [];
   List<Diary> diaries = [];
 
+  Future<String> getTimezoneName() async {
+    return await FlutterTimezone.getLocalTimezone();
+  }
+
   // 월별 다이어리가 기록된 날짜
   Future<void> fetchDiaryDatesForMonth(DateTime month) async {
     try {
@@ -36,6 +41,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         throw Exception("Access token is not available.");
       }
 
+      final timezone = await getTimezoneName();
+
       final response = await http.post(
         Uri.parse('http://10.0.2.2:8080/cbt/month/list'),
         headers: {
@@ -44,6 +51,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         },
         body: jsonEncode({
           'localDate': DateFormat('yyyy-MM-dd').format(month), // 선택된 월의 첫 번째 날짜
+          'timezone' : timezone,
         }),
       );
 
@@ -78,6 +86,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         throw Exception("Access token is not available.");
       }
 
+      final timezone = await getTimezoneName();
+
       final response = await http.post(
         Uri.parse('http://10.0.2.2:8080/cbt/list'),
         headers: {
@@ -86,6 +96,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         },
         body: jsonEncode({
           'localDate': DateFormat('yyyy-MM-dd').format(day), // 선택한 날짜
+          'timezone': timezone,
         }),
       );
 
@@ -96,7 +107,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // 서버에서 받은 다이어리 데이터
           List<dynamic> diaryList = data['data'];
           setState(() {
-            diaries = diaryList.map((e) => Diary.fromJson(e)).toList();
+            diaries = diaryList.map((e) {
+              Diary diary = Diary.fromJson(e);
+              diary.updateLocalTimes();  // Update the local times here
+              return diary;
+            }).toList();
           });
         } else {
           throw Exception(data['message']);

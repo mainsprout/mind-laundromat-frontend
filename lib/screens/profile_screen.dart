@@ -17,9 +17,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _firstname = '';
   String _lastname = '';
   String _name = '';
-  String _emotion = 'happiness';
+  String _emotion = '';
 
-  bool isEditingName = false;
+  bool isEditing = false;
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
 
@@ -49,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _firstname = userInfo['first_name'];
           _lastname = userInfo['last_name'];
           _name = '$_firstname $_lastname';
-          // TODO: 유저가 선택한 감정
+          _emotion = userInfo['emotion'].toLowerCase();
           firstNameController.text = _firstname;
           lastNameController.text = _lastname;
         });
@@ -58,6 +58,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       print('Error fetching user info: $e');
+    }
+  }
+
+  Future<void> _selectEmotion() async {
+    final selectedEmotion = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Emotion'),
+        backgroundColor: Colors.white,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildEmotionOption('happiness'),
+            _buildEmotionOption('sadness'),
+            _buildEmotionOption('anger'),
+            _buildEmotionOption('neutral'),
+            _buildEmotionOption('calm'),
+          ],
+        ),
+      ),
+    );
+
+    if (selectedEmotion != null && mounted) {
+      setState(() {
+        _emotion = selectedEmotion;
+      });
+    }
+  }
+
+  Widget _buildEmotionOption(String emotionName) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(emotionName),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Image.asset(
+              'assets/emotions/$emotionName.png',
+              width: 40,
+              height: 40,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              emotionName.toUpperCase(),
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _updateUserInfoOnServer() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token') ?? '';
+
+    final Map<String, String> body = {
+      'first_name': _firstname,
+      'last_name': _lastname,
+      'emotion_name': _emotion.toUpperCase(), // 서버는 대문자 기대
+    };
+
+    try {
+      final response = await http.patch(
+        Uri.parse('http://10.0.2.2:8080/auth/update'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 200) {
+        print('User info updated successfully');
+      } else {
+        print('Failed to update user info. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating user info: $e');
     }
   }
 
@@ -132,15 +211,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 감정 이미지
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(40),
-                  child: Image.asset(
-                    'assets/emotions/$_emotion.png',
-                    width: 64,
-                    height: 64,
-                    fit: BoxFit.cover,
-                  ),
+
+                // 감정 이미지 + 편집 아이콘 (editing 중일 때만)
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: _emotion.isNotEmpty
+                          ? Image.asset(
+                        'assets/emotions/$_emotion.png',
+                        width: 64,
+                        height: 64,
+                        //fit: BoxFit.cover,
+                      )
+                          : Container(
+                        width: 64,
+                        height: 64,
+                        color: Colors.white, // 로딩 중일 때 배경
+                      ),
+                    ),
+                    if (isEditing)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onTap: _selectEmotion,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            padding: const EdgeInsets.all(4),
+                            child: const Icon(
+                              Icons.edit,
+                              size: 16,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 16),
 
@@ -149,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      isEditingName
+                      isEditing
                           ? Row(
                         children: [
                           Expanded(
@@ -195,33 +306,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 8),
 
                 // 편집 아이콘
                 GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     setState(() {
-                      if (isEditingName) {
+                      if (isEditing) {
                         // 편집 완료 → 저장
                         _firstname = firstNameController.text;
                         _lastname = lastNameController.text;
                         _name = '$_firstname $_lastname';
-
-                        // 여기에 서버 전송 코드 나중에 넣으면 됨
-                        print('저장됨: $_firstname $_lastname');
                       } else {
                         // 편집 시작 → 현재 이름값 세팅
                         firstNameController.text = _firstname;
                         lastNameController.text = _lastname;
                       }
+                    });
 
-                      isEditingName = !isEditingName;
+                    // 편집 완료 시 서버에 전송
+                    if (isEditing) {
+                      await _updateUserInfoOnServer();
+                    }
+
+                    setState(() {
+                      isEditing = !isEditing;
                     });
                   },
                   child: Padding(padding: const EdgeInsets.only(top: 10.0),
                     child: Image.asset(
-                      isEditingName
+                      isEditing
                           ? 'assets/icons/edit1.png'
                           : 'assets/icons/edit2.png',
                       width: 28,
