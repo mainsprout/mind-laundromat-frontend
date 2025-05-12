@@ -377,37 +377,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         children: [
                           // 텍스트 영역
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text(
-                                  DateFormat('HH:mm').format(diary.regDate),
-                                  style: const TextStyle(
-                                    fontSize: 14.0,
-                                    color: Colors.grey,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    DateFormat('HH:mm').format(diary.regDate),
+                                    style: const TextStyle(
+                                      fontSize: 14.0,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 8.0),
-                                Text(
-                                  diary.summation,
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
-                                const SizedBox(height: 8.0),
-                              ],
+                                  const SizedBox(height: 8.0),
+                                  Text(
+                                    diary.summation,
+                                    style: const TextStyle(fontSize: 16.0),
+                                  ),
+                                  const SizedBox(height: 8.0),
+                                ],
+                              ),
                             ),
                           ),
 
                           // 감정 이미지
-                          Container(
-                            width: 56,
-                            height: 56,
-                            padding: const EdgeInsets.all(4.0),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: getEmotionImage(diary.emotionType, size: 36), // 이미지 크기 조절
+                          Image.asset(
+                            'assets/items/calendar_emotions/${diary.emotionType}.png',
+                            width: 80,
                           ),
                         ],
                       ),

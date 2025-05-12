@@ -32,10 +32,12 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/emotions/
-    - assets/distortions/
     - assets/distortion_card/
     - assets/distortion_card/icons/
     - assets/distortion_card/description/
+    - assets/items/distortion_banners/
+    - assets/items/calendar_emotions/
+    - assets/items/diary_emotions/
 
 flutter_launcher_icons:
   android: true
