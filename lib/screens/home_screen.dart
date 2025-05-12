@@ -18,13 +18,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFADCCEC),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
             // 상단: 캘린더 아이콘
             Positioned(
-              top: 16,
+              top: 30,
               left: 16,
               child: Material(
                 color: Colors.transparent,
@@ -36,18 +36,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Image.asset(
-                      'assets/icons/today.png', // 아이콘 이미지 경로
-                      width: 40,  // 원하는 크기 설정
-                      height: 40, // 원하는 크기 설정
+                      'assets/icons/today.png',
+                      width: 40,
+                      height: 40,
                     ),
                   ),
                 ),
               ),
             ),
 
-            // 상단: 프로필 아이콘
+            // 오른쪽 상단: 프로필 아이콘
             Positioned(
-              top: 16,
+              top: 30,
               right: 16,
               child: Material(
                 color: Colors.transparent,
@@ -59,9 +59,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Image.asset(
-                      'assets/icons/account_circle.png', // 아이콘 이미지 경로
-                      width: 40,  // 원하는 크기 설정
-                      height: 40, // 원하는 크기 설정
+                      'assets/icons/account_circle.png',
+                      width: 40,
+                      height: 40,
                     ),
                   ),
                 ),
@@ -69,37 +69,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
 
             // 중앙 : 이미지 + 텍스트
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => DistortionDetail()),
-                  );
-                },
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Image.asset('assets/images/home_screen.png'),
-                    Positioned(
-                      bottom: 35,
-                      child: Text(
-                        'Tap on the picture!',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(0, 1),
-                              blurRadius: 2,
-                              color: Colors.black45,
-                            ),
-                          ],
+            Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 160.0), // 원하는 만큼 조절
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DistortionDetail()),
+                    );
+                  },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Image.asset('assets/images/home_screen.png'),
+                      Positioned(
+                        bottom: 20,
+                        child: Text(
+                          'Tap on the picture!',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                                color: Colors.black45,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

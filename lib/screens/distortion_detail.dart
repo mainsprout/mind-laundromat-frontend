@@ -28,6 +28,18 @@ class _DistortionDetailState extends State<DistortionDetail> {
     'SHOULD_STATEMENTS',
   ];
 
+  void _changeImage(bool isNext) {
+    setState(() {
+      if (isNext) {
+        // 오른쪽 버튼 클릭 시 인덱스 증가
+        selectedIndex = (selectedIndex + 1) % distortionNames.length;
+      } else {
+        // 왼쪽 버튼 클릭 시 인덱스 감소
+        selectedIndex = (selectedIndex - 1 + distortionNames.length) % distortionNames.length;
+      }
+    });
+  }
+
   int selectedIndex = 13; // 기본으로 OVERGENERALIZATION (index 13)
   bool isDescription = false;
 
@@ -66,9 +78,71 @@ class _DistortionDetailState extends State<DistortionDetail> {
                         height: 370,
                       ),
                     ),
+                    Positioned(
+                      bottom: 30,
+                      child: Image.asset(
+                        'assets/icons/flip.png',
+                        width: 25,
+                        height: 25,
+                      ),
+                    ),
                   ],
                 ),
-                // 화살표는 생략
+                // 왼쪽 화살표
+                Positioned(
+                  left: 0,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_left),
+                      onPressed: () {
+                        debugPrint('Left arrow clicked');
+                        _changeImage(false);
+                        isDescription=false;
+                      },
+                    ),
+                  ),
+                ),
+
+                // 오른쪽 화살표 버튼
+                Positioned(
+                  right: 0,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_right),
+                      onPressed: () {
+                        debugPrint('Right arrow clicked');
+                        _changeImage(true);
+                        isDescription=false;
+                      },
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -97,6 +171,7 @@ class _DistortionDetailState extends State<DistortionDetail> {
                         setState(() {
                           selectedIndex = index;
                         });
+                        isDescription=false;
                       },
                       child: Container(
                         decoration: BoxDecoration(
