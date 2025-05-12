@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 import 'dart:math';
+import 'package:percent_indicator/percent_indicator.dart';
+
 
 class DistortionDetail extends StatefulWidget {
   const DistortionDetail({super.key});
@@ -43,6 +45,7 @@ class _DistortionDetailState extends State<DistortionDetail> {
 
   int selectedIndex = 13; // 기본으로 OVERGENERALIZATION (index 13)
   bool isDescription = false;
+  bool enableFlipAnimation = true;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +71,10 @@ class _DistortionDetailState extends State<DistortionDetail> {
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 500),
                       transitionBuilder: (Widget child, Animation<double> animation) {
+                        if (!enableFlipAnimation) {
+                          return child;
+                        }
+
                         final rotate = Tween(begin: pi, end: 0.0).animate(animation);
 
                         return AnimatedBuilder(
@@ -92,6 +99,7 @@ class _DistortionDetailState extends State<DistortionDetail> {
                         key: ValueKey(isDescription),
                         onTap: () {
                           setState(() {
+                            enableFlipAnimation = true;
                             isDescription = !isDescription;
                           });
                         },
@@ -112,10 +120,34 @@ class _DistortionDetailState extends State<DistortionDetail> {
                                 height: 25,
                               ),
                             ),
+                            if (!isDescription)
+                              Positioned(
+                                top: 7,
+                                left: 7,
+                                child: CircularPercentIndicator(
+                                  radius: 20.0,
+                                  lineWidth: 6.0,
+                                  animation: true,
+                                  percent: 0.7,
+                                  center: Text(
+                                    "70%",
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  circularStrokeCap: CircularStrokeCap.round,
+                                  progressColor: Colors.white,
+                                  backgroundColor: Colors.black26,
+                                ),
+                              ),
+
                           ],
                         ),
                       ),
                     ),
+
                   ],
                 ),
                 // 왼쪽 화살표
@@ -167,8 +199,8 @@ class _DistortionDetailState extends State<DistortionDetail> {
                       icon: const Icon(Icons.arrow_right),
                       onPressed: () {
                         debugPrint('Right arrow clicked');
-                        _changeImage(true);
                         isDescription=false;
+                        _changeImage(true);
                       },
                     ),
                   ),
@@ -199,9 +231,10 @@ class _DistortionDetailState extends State<DistortionDetail> {
                     return GestureDetector(
                       onTap: () {
                         setState(() {
+                          enableFlipAnimation = false; // 애니메이션 비활성화
                           selectedIndex = index;
+                          isDescription = false;  // 설명을 닫음
                         });
-                        isDescription=false;
                       },
                       child: Container(
                         decoration: BoxDecoration(
