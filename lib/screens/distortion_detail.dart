@@ -15,30 +15,31 @@ class DistortionDetail extends StatefulWidget {
 }
 
 class _DistortionDetailState extends State<DistortionDetail> {
-  final List<String> distortionNames = [
-    'BLACK_AND_WHITE_THINKING',
-    'BLAMING',
-    'CONTROL_FALLACY',
-    'DISQUALIFYING_THE_POSITIVE',
-    'EMOTIONAL_REASONING',
-    'FALLACY_OF_FAIRNESS',
-    'FORTUNE_TELLING',
-    'JUMPING_TO_CONCLUSIONS',
-    'LABELING',
-    'MAGNIFICATION',
-    'MENTAL_FILTERING',
-    'MIND_READING',
-    'MINIMIZATION',
-    'OVERGENERALIZATION',
-    'PERSONALIZATION',
-    'SHOULD_STATEMENTS',
-  ];
+  // final List<String> distortionNames = [
+  //   'BLACK_AND_WHITE_THINKING',
+  //   'BLAMING',
+  //   'CONTROL_FALLACY',
+  //   'DISQUALIFYING_THE_POSITIVE',
+  //   'EMOTIONAL_REASONING',
+  //   'FALLACY_OF_FAIRNESS',
+  //   'FORTUNE_TELLING',
+  //   'JUMPING_TO_CONCLUSIONS',
+  //   'LABELING',
+  //   'MAGNIFICATION',
+  //   'MENTAL_FILTERING',
+  //   'MIND_READING',
+  //   'MINIMIZATION',
+  //   'OVERGENERALIZATION',
+  //   'PERSONALIZATION',
+  //   'SHOULD_STATEMENTS',
+  // ];
 
 
-  int selectedIndex = 13; // 기본으로 OVERGENERALIZATION (index 13)
+  int selectedIndex = 0;
   bool isDescription = false;
   bool enableFlipAnimation = true;
   List<Map<String, dynamic>> distortionData = [];
+  List<String> distortionNames = [];
   int total = 1;
 
   @override
@@ -70,6 +71,8 @@ class _DistortionDetailState extends State<DistortionDetail> {
       setState(() {
         total = data['data']['total'] ?? 1;
         distortionData = List<Map<String, dynamic>>.from(data['data']['distortionList']);
+        distortionNames = distortionData.map((item) => item['distortionType'] as String).toList();
+
       });
     } else {
       throw Exception('Failed to load distortion data');
@@ -91,6 +94,12 @@ class _DistortionDetailState extends State<DistortionDetail> {
 
   @override
   Widget build(BuildContext context) {
+    if (distortionNames.isEmpty || selectedIndex >= distortionNames.length) {
+      // 아직 데이터가 로딩되지 않았거나 인덱스가 유효하지 않음
+      return const Center(child: CircularProgressIndicator()); // 또는 SizedBox(), Text("로딩 중입니다") 등
+    }
+
+
     // 선택된 distortion의 퍼센트 계산
     double percentage = 0.0;
     if (distortionData.isNotEmpty) {
