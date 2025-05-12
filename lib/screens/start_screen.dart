@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StartScreen extends StatefulWidget {
@@ -22,10 +23,34 @@ class _StartScreenState extends State<StartScreen> {
 
   Future<void> _loadLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final loggedIn = prefs.getBool('isLoggedIn') ?? false;
-    setState(() {
-      _isLoggedIn = loggedIn;
-    });
+    final token = prefs.getString('access_token') ?? '';
+
+    if (token.isEmpty){
+      setState(() {
+        _isLoggedIn = false;
+      });
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/auth/info'),
+        headers: {'Authorization': 'Bearer $token'}, // 'Bearer ' 붙여서 보냄
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _isLoggedIn = true;
+        });
+      } else {
+        setState(() {
+          prefs.clear();
+          _isLoggedIn = false;
+        });
+      }
+    } catch (e) {
+      print('Access token expired');
+    }
   }
 
   void _onPanUpdate(DragUpdateDetails details) {

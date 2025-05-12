@@ -1,15 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:mind_laundromat/models/diary.dart';
 import 'package:mind_laundromat/widgets/custom_app_bar.dart';
 
 class DiaryDetailScreen extends StatefulWidget {
-  final int diaryId;
+  final Diary diary;
 
-  const DiaryDetailScreen({super.key, required this.diaryId});
+  const DiaryDetailScreen({super.key, required this.diary});
 
   @override
   State<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
@@ -21,41 +18,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   @override
   void initState() {
     super.initState();
-    fetchDiaryDetail();
-  }
-
-  Future<void> fetchDiaryDetail() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token') ?? '';
-
-      if (accessToken.isEmpty) {
-        throw Exception("Access token is not available.");
-      }
-
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/cbt/${widget.diaryId}'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-
-        if (data['code'] == 'S201') {
-          setState(() {
-            _diary = Diary.fromJson(data['data']);
-          });
-        } else {
-          throw Exception(data['message']);
-        }
-      } else {
-        throw Exception('Failed to load diary detail (code: ${response.statusCode})');
-      }
-    } catch (e) {
-      print('Error fetching diary details: $e');
-    }
+    _diary = widget.diary;
   }
 
   @override
@@ -63,9 +26,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Diary'),
       backgroundColor: Colors.white,
-      body: _diary == null
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mind_laundromat/screens/select_emotion_screen.dart';
 import 'screens/screens.dart';
 
 void main() {

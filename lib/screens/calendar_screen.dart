@@ -113,6 +113,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedDay = _focusedDay;
     fetchDiaryDatesForMonth(_focusedDay); // 앱이 시작될 때 현재 월의 다이어리 날짜 데이터 가져오기
     fetchDiaryForDay(_focusedDay); // 기본적으로 현재 날짜의 다이어리 정보 불러오기
   }
@@ -121,8 +122,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void _onMonthChanged(DateTime focusedMonth) {
     setState(() {
       _focusedDay = focusedMonth;  // focusedDay를 바꿔주고
+      _selectedDay = DateTime(focusedMonth.year, focusedMonth.month, 1); // 선택은 해당 월의 1일로
     });
     fetchDiaryDatesForMonth(focusedMonth); // 월에 맞는 데이터 새로 불러오기
+    fetchDiaryForDay(_selectedDay!); // 선택 날짜의 다이어리도 불러오기
+
+    if (_focusedDay.year == DateTime.now().year &&
+        _focusedDay.month == DateTime.now().month) {
+      _selectedDay = DateTime.now(); // 만약 오늘이 있으면 선택은 오늘날짜로
+    }
   }
 
   // 날짜가 선택되면 해당 날짜에 대한 다이어리를 불러옴
@@ -338,7 +346,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => DiaryDetailScreen(diaryId: diary.diaryId),
+                          builder: (_) => DiaryDetailScreen(diary: diary),
                         ),
                       );
                     },

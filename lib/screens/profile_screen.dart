@@ -56,7 +56,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    await prefs.setBool('isLoggedIn', false);
 
     if (mounted) {
       Navigator.pushAndRemoveUntil(

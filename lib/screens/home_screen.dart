@@ -68,16 +68,39 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
 
-            // 중앙 : 이미지
+            // 중앙 : 이미지 + 텍스트
             Center(
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => DistortionDetail()), // 이동할 페이지로 변경
+                    MaterialPageRoute(builder: (context) => DistortionDetail()),
                   );
                 },
-                child: Image.asset('assets/images/home_screen.png'),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.asset('assets/images/home_screen.png'),
+                    Positioned(
+                      bottom: 35,
+                      child: Text(
+                        'Tap on the picture!',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
+                              color: Colors.black45,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 

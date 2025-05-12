@@ -35,7 +35,6 @@ class _SignInScreenState extends State<SignInScreen> {
       String token = response['token']?.replaceFirst('Bearer ', '') ?? '';
 
       // 토큰 저장
-      await prefs.setBool('isLoggedIn', true);
       await prefs.setString('access_token', token);
 
       Navigator.pushAndRemoveUntil(
