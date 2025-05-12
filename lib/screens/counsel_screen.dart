@@ -3,6 +3,8 @@ import '../widgets/custom_app_bar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mind_laundromat/models/diary.dart';
+import 'package:mind_laundromat/screens/diary_detail_screen.dart';
 
 class CounselScreen extends StatefulWidget {
   const CounselScreen({super.key});
@@ -15,21 +17,41 @@ class _CounselScreenState extends State<CounselScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
 
-  String _emotion = '';
+  String _userEmotion ='';
+  String _botEmotion = '';
   bool _isSending = false;
+  String _diaryId = '';
 
   // 초기 메시지
   @override
   void initState() {
     super.initState();
     _fetchUserEmotion();
+    _fetchBotEmotion();
     _messages.add({
       'role': 'bot',
       'content': 'Hello! What are you worried about? Feel free to tell me. 😊',
     });
   }
 
+  // SharedPreferences에서 감정 값을 불러오기
   Future<void> _fetchUserEmotion() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedEmotion = prefs.getString('selected_emotion');
+      if (savedEmotion != null && savedEmotion.isNotEmpty) {
+        setState(() {
+          _userEmotion = savedEmotion.toUpperCase();
+        });
+      }
+      prefs.remove('selected_emotion');
+    } catch (e) {
+      print('Failed to load emotion: $e');
+    }
+  }
+
+  // 유저 정보에서 봇 프로필 가져오기
+  Future<void> _fetchBotEmotion() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token') ?? '';
@@ -50,7 +72,7 @@ class _CounselScreenState extends State<CounselScreen> {
         final emotion = data['data']['emotion']?.toString().toLowerCase();
         if (emotion != null && emotion.isNotEmpty) {
           setState(() {
-            _emotion = emotion;
+            _botEmotion = emotion;
           });
         }
       }
@@ -59,6 +81,7 @@ class _CounselScreenState extends State<CounselScreen> {
     }
   }
 
+  // 메시지 주고받기
   Future<void> _sendMessage() async {
     final userInput = _controller.text.trim();
     if (userInput.isEmpty || _isSending) return;
@@ -69,14 +92,37 @@ class _CounselScreenState extends State<CounselScreen> {
       _controller.clear();
     });
 
-    try {
-      // TODO: api 연동
-      await Future.delayed(const Duration(seconds: 1));
-      final botResponse = 'You are truly the best.';
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token') ?? '';
 
-      setState(() {
-        _messages.add({'role': 'bot', 'content': botResponse});
-      });
+    if (accessToken.isEmpty) {
+      throw Exception("Access token is not available.");
+    }
+
+    //메시지 보내기
+    final String body = userInput;
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/gemini/chat'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+
+      // 메시지 받기
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final String botResponse = data['gemini']!;
+
+        setState(() {
+          _messages.add({'role': 'bot', 'content': botResponse});
+        });
+      } else {
+        print('Failed to receive message. Status: ${response.statusCode}');
+      }
     } catch (e) {
       setState(() {
         _messages.add({'role': 'bot', 'content': 'An error occurred.'});
@@ -86,6 +132,78 @@ class _CounselScreenState extends State<CounselScreen> {
         _isSending = false;
       });
     }
+  }
+
+  // 종료 시그널 보내기
+  Future<void> _sendEndSignal() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token') ?? '';
+
+    if (accessToken.isEmpty) {
+      throw Exception("Access token is not available.");
+    }
+
+    try {
+      // 종료 시그널 및 감정 정보 보내기
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/gemini/chat/complete?emotion=$_userEmotion'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // 전체 다이어리 정보 받기
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        _diaryId = data['data']['diary_id'];
+
+      } else {
+        print("HTTP 오류 상태 코드: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("예외 발생: $e");
+    }
+
+    try {
+      // 종료 시그널 및 감정 정보 보내기
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/cbt/$_diaryId'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // 전체 다이어리 정보 받기
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        if (data['code'] == 'S201') {
+          // 서버에서 받은 다이어리 데이터
+          final diaryJson = data['data'];
+          final Diary diary = Diary.fromJson(diaryJson);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DiaryDetailScreen(diary: diary),
+            ),
+          );
+        } else {
+          print("서버 응답 코드: ${data['code']}, 메시지: ${data['message']}");
+        }
+      } else {
+        print("HTTP 오류 상태 코드: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("예외 발생: $e");
+    }
+  }
+
+  // 뒤로가기 버튼 클릭 시 동작
+  void _goBack() {
+    Navigator.pop(context);
   }
 
   Widget _buildMessage(Map<String, String> message) {
@@ -103,9 +221,9 @@ class _CounselScreenState extends State<CounselScreen> {
               padding: const EdgeInsets.only(right: 8.0),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: _emotion.isNotEmpty
+                child: _botEmotion.isNotEmpty
                 ? Image.asset(
-                  'assets/emotions/$_emotion.png',
+                  'assets/emotions/$_botEmotion.png',
                   width: 32,
                   height: 32,
                   //fit: BoxFit.cover,
@@ -149,7 +267,29 @@ class _CounselScreenState extends State<CounselScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
-      appBar: const CustomAppBar(title: ''),
+      //appBar: const CustomAppBar(title: ''),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),  // 왼쪽 아이콘과 벽 사이의 간격 설정
+          child: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Colors.black, size: 30),
+            onPressed: _goBack,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),  // 오른쪽 아이콘과 벽 사이의 간격 설정
+            child: IconButton(
+              icon: const Icon(Icons.exit_to_app, color: Colors.black, size: 30),
+              onPressed: _sendEndSignal,
+            ),
+          ),
+        ],
+        toolbarHeight: 60,
+      ),
+
       body: Column(
         children: [
           Expanded(

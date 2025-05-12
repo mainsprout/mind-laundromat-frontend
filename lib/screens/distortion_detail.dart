@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 import 'dart:math';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class DistortionDetail extends StatefulWidget {
@@ -31,6 +34,48 @@ class _DistortionDetailState extends State<DistortionDetail> {
     'SHOULD_STATEMENTS',
   ];
 
+
+  int selectedIndex = 13; // 기본으로 OVERGENERALIZATION (index 13)
+  bool isDescription = false;
+  bool enableFlipAnimation = true;
+  List<Map<String, dynamic>> distortionData = [];
+  int total = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDistortionData(); // 화면 초기화 시 데이터 요청
+  }
+
+  // API 요청을 보내서 데이터를 받아오는 함수
+  Future<void> fetchDistortionData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      return;
+    }
+
+    final url = Uri.parse('http://10.0.2.2:8080/cbt/distortion/list');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body); // JSON 파싱
+      setState(() {
+        total = data['data']['total'] ?? 1;
+        distortionData = List<Map<String, dynamic>>.from(data['data']['distortionList']);
+      });
+    } else {
+      throw Exception('Failed to load distortion data');
+    }
+  }
+
   void _changeImage(bool isNext) {
     setState(() {
       if (isNext) {
@@ -43,12 +88,20 @@ class _DistortionDetailState extends State<DistortionDetail> {
     });
   }
 
-  int selectedIndex = 13; // 기본으로 OVERGENERALIZATION (index 13)
-  bool isDescription = false;
-  bool enableFlipAnimation = true;
 
   @override
   Widget build(BuildContext context) {
+    // 선택된 distortion의 퍼센트 계산
+    double percentage = 0.0;
+    if (distortionData.isNotEmpty) {
+      final distortion = distortionData.firstWhere(
+            (item) => item['distortionType'] == distortionNames[selectedIndex],
+        //orElse: () => {'count': 0, 'total': 1},
+      );
+      final count = distortion['count'] ?? 0;
+      percentage = count / total * 100;
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: const CustomAppBar(title: 'My Distortion'),
@@ -128,9 +181,9 @@ class _DistortionDetailState extends State<DistortionDetail> {
                                   radius: 20.0,
                                   lineWidth: 6.0,
                                   animation: true,
-                                  percent: 0.7,
+                                  percent: percentage / 100,
                                   center: Text(
-                                    "70%",
+                                    "${percentage.toStringAsFixed(0)}%",
                                     style: TextStyle(
                                       fontSize: 12.0,
                                       fontWeight: FontWeight.bold,
@@ -216,6 +269,7 @@ class _DistortionDetailState extends State<DistortionDetail> {
               padding: const EdgeInsets.all(16.0),
               child: RefreshIndicator(
                 onRefresh: () async {
+                  await fetchDistortionData();
                   await Future.delayed(const Duration(seconds: 1));
                   debugPrint('Refreshed!');
                 },

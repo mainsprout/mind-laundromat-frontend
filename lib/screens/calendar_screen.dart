@@ -108,7 +108,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           setState(() {
             diaries = diaryList.map((e) {
               Diary diary = Diary.fromJson(e);
-              diary.updateLocalTimes();  // Update the local times here
               return diary;
             }).toList();
           });
@@ -391,7 +390,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   ),
                                   const SizedBox(height: 8.0),
                                   Text(
-                                    diary.summation,
+                                    diary.summation ?? '',
                                     style: const TextStyle(fontSize: 16.0),
                                   ),
                                   const SizedBox(height: 8.0),

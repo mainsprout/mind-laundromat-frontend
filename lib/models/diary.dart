@@ -1,19 +1,15 @@
 // lib/models/diary.dart
 
 class Diary {
-  final int diaryId;
-  final String beforeContent;
-  final String afterContent;
-  final DateTime regDate;
-  final DateTime modDate;
-  final String emotionType;
-  final String summation;
-  final String solution;
-  final List<String> distortionType;
-
-  // Mutable properties for local time
-  DateTime? localRegDate;
-  DateTime? localModDate;
+  int diaryId;
+  String? beforeContent;
+  String? afterContent;
+  DateTime regDate;
+  DateTime modDate;
+  String emotionType;
+  String? summation;
+  String? solution;
+  List<String> distortionType;
 
   Diary({
     required this.diaryId,
@@ -33,18 +29,12 @@ class Diary {
       diaryId: json['diary_id'],
       beforeContent: json['before_content'],
       afterContent: json['after_content'],
-      regDate: DateTime.parse(json['regDate']),
-      modDate: DateTime.parse(json['modDate']),
+      regDate: DateTime.parse(json['regDate']+'Z').toLocal(),
+      modDate: DateTime.parse(json['modDate']+'Z').toLocal(),
       emotionType: json['emotion_type'],
       summation: json['summation'],
       solution: json['solution'],
       distortionType: List<String>.from(json['distortion_type']),
     );
-  }
-
-  // Method to update local times
-  void updateLocalTimes() {
-    localRegDate = regDate.toLocal();
-    localModDate = modDate.toLocal();
   }
 }

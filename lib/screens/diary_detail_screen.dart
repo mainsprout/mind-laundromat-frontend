@@ -104,7 +104,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 36.0),
                     child: Text(
-                      _diary!.summation,
+                      _diary?.summation ?? '',
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w400,
@@ -130,12 +130,12 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    _diary!.beforeContent,
+                    _diary?.beforeContent ?? '',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 26),
                   // distortionType 이미지 리스트 출력
-                  if (_diary!.distortionType.isNotEmpty)
+                  if (_diary!.distortionType.isNotEmpty )
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: _diary!.distortionType.map((distortion) {
@@ -156,7 +156,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    _diary!.afterContent,
+                    _diary?.afterContent ?? '',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 44),
@@ -178,7 +178,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    _diary!.solution,
+                    _diary?.solution ?? '',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 32),
