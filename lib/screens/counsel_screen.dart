@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_app_bar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -91,18 +90,17 @@ class _CounselScreenState extends State<CounselScreen> {
       _isSending = true;
       _controller.clear();
     });
-
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token') ?? '';
-
-    if (accessToken.isEmpty) {
-      throw Exception("Access token is not available.");
-    }
-
-    //메시지 보내기
-    final String body = userInput;
-
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token') ?? '';
+
+      if (accessToken.isEmpty) {
+        throw Exception("Access token is not available.");
+      }
+
+      //메시지 보내기
+      final String body = userInput;
+
       final response = await http.post(
         Uri.parse('http://10.0.2.2:8080/gemini/chat'),
         headers: {
@@ -136,14 +134,14 @@ class _CounselScreenState extends State<CounselScreen> {
 
   // 종료 시그널 보내기
   Future<void> _sendEndSignal() async {
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token') ?? '';
-
-    if (accessToken.isEmpty) {
-      throw Exception("Access token is not available.");
-    }
-
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token') ?? '';
+
+      if (accessToken.isEmpty) {
+        throw Exception("Access token is not available.");
+      }
+
       // 종료 시그널 및 감정 정보 보내기
       final response = await http.post(
         Uri.parse('http://10.0.2.2:8080/gemini/chat/complete?emotion=$_userEmotion'),
@@ -156,18 +154,27 @@ class _CounselScreenState extends State<CounselScreen> {
       // 전체 다이어리 정보 받기
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        _diaryId = data['data']['diary_id'];
-
+        _diaryId = data['diary_id'];
+        print('다이어리 아이디는 $_diaryId');
       } else {
         print("HTTP 오류 상태 코드: ${response.statusCode}");
       }
     } catch (e) {
       print("예외 발생: $e");
     }
+  }
+
+  Future<void> _getDiary()async{
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token') ?? '';
+
+    if (accessToken.isEmpty) {
+      throw Exception("Access token is not available.");
+    }
 
     try {
       // 종료 시그널 및 감정 정보 보내기
-      final response = await http.post(
+      final response = await http.get(
         Uri.parse('http://10.0.2.2:8080/cbt/$_diaryId'),
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -197,13 +204,19 @@ class _CounselScreenState extends State<CounselScreen> {
         print("HTTP 오류 상태 코드: ${response.statusCode}");
       }
     } catch (e) {
-      print("예외 발생: $e");
+      print("예외 발생!!: $e");
     }
   }
 
   // 뒤로가기 버튼 클릭 시 동작
   void _goBack() {
     Navigator.pop(context);
+  }
+
+  // 챗 종료
+  void _endChat() {
+    _sendEndSignal();
+    _getDiary();
   }
 
   Widget _buildMessage(Map<String, String> message) {
@@ -283,7 +296,7 @@ class _CounselScreenState extends State<CounselScreen> {
             padding: const EdgeInsets.only(right: 16.0),  // 오른쪽 아이콘과 벽 사이의 간격 설정
             child: IconButton(
               icon: const Icon(Icons.exit_to_app, color: Colors.black, size: 30),
-              onPressed: _sendEndSignal,
+              onPressed: _endChat,
             ),
           ),
         ],

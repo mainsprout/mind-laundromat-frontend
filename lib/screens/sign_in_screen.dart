@@ -62,6 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
       if (response.statusCode == 200) {
         final token = response.headers['authorization'];
+
         if (token != null && token.startsWith('Bearer ')) {
           return {'token': token};
         }
