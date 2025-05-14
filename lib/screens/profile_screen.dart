@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'start_screen.dart';
 import 'package:mind_laundromat/widgets/custom_app_bar.dart';
+import 'package:mind_laundromat/services/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -30,32 +30,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token') ?? '';
-
     try {
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/auth/info'),
-        headers: {'Authorization': 'Bearer $token'}, // 'Bearer ' 붙여서 보냄
-      );
+      final response = await ApiService.get("/auth/info");
 
-      if (response.statusCode == 200) {
-        final decodedBody = utf8.decode(response.bodyBytes);
-        final data = json.decode(decodedBody);
-        final userInfo = data['data'];
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final data = json.decode(decodedBody);
+      final userInfo = data['data'];
 
-        setState(() {
-          _email = userInfo['email'];
-          _firstname = userInfo['first_name'];
-          _lastname = userInfo['last_name'];
-          _name = '$_firstname $_lastname';
-          _emotion = userInfo['emotion'].toLowerCase();
-          firstNameController.text = _firstname;
-          lastNameController.text = _lastname;
-        });
-      } else {
-        print('Failed to fetch user info. Status: ${response.statusCode}');
-      }
+      setState(() {
+        _email = userInfo['email'];
+        _firstname = userInfo['first_name'];
+        _lastname = userInfo['last_name'];
+        _name = '$_firstname $_lastname';
+        _emotion = userInfo['emotion'].toLowerCase();
+        firstNameController.text = _firstname;
+        lastNameController.text = _lastname;
+      });
     } catch (e) {
       print('Error fetching user info: $e');
     }
@@ -111,9 +101,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _updateUserInfoOnServer() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token') ?? '';
-
     final Map<String, String> body = {
       'first_name': _firstname,
       'last_name': _lastname,
@@ -121,20 +108,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     };
 
     try {
-      final response = await http.patch(
-        Uri.parse('http://10.0.2.2:8080/auth/update'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode(body),
-      );
+      await ApiService.patch("/auth/update", body);
 
-      if (response.statusCode == 200) {
-        print('User info updated successfully');
-      } else {
-        print('Failed to update user info. Status: ${response.statusCode}');
-      }
     } catch (e) {
       print('Error updating user info: $e');
     }
@@ -155,17 +130,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _deleteAccount() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token') ?? '';
-
     try {
-      final response = await http.delete(
-        Uri.parse('http://10.0.2.2:8080/auth'),
-        headers: {'Authorization': 'Bearer $token'}, // 'Bearer ' 붙여서 보냄
-      );
+      final response = await ApiService.delete("/auth");
 
       if (response.statusCode == 200) {
         await prefs.clear();
-        await prefs.setBool('isLoggedIn', false);
 
         if (mounted) {
           Navigator.pushAndRemoveUntil(

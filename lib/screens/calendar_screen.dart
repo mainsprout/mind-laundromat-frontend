@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:mind_laundromat/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:mind_laundromat/screens/diary_detail_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mind_laundromat/models/diary.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:mind_laundromat/services/api_service.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -33,41 +32,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // 월별 다이어리가 기록된 날짜
   Future<void> fetchDiaryDatesForMonth(DateTime month) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token') ?? '';
-
-      if (accessToken.isEmpty) {
-        throw Exception("Access token is not available.");
-      }
-
       final timezone = await getTimezoneName();
 
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/cbt/month/list'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'localDate': DateFormat('yyyy-MM-dd').format(month), // 선택된 월의 첫 번째 날짜
-          'timezone' : timezone,
-        }),
-      );
+      final response = await ApiService.post("/cbt/month/list", {
+        'localDate': DateFormat('yyyy-MM-dd').format(month), // 선택된 월의 첫 번째 날짜
+        'timezone' : timezone,
+      });
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
-        if (data['code'] == 'S201') {
-          // 서버에서 받은 날짜 데이터
-          List<String> dateStrings = List<String>.from(data['data']);
-          setState(() {
-            diaryDays = dateStrings.map((date) => DateTime.parse(date)).toList();
-          });
-        } else {
-          throw Exception(data['message']);
-        }
+      if (data['code'] == 'S201') {
+        // 서버에서 받은 날짜 데이터
+        List<String> dateStrings = List<String>.from(data['data']);
+        setState(() {
+          diaryDays = dateStrings.map((date) => DateTime.parse(date)).toList();
+        });
       } else {
-        throw Exception('Failed to load diary dates');
+        throw Exception(data['message']);
       }
     } catch (e) {
       // 오류 처리
@@ -78,44 +59,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // 날짜별 다이어리들
   Future<void> fetchDiaryForDay(DateTime day) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token') ?? '';
-
-      if (accessToken.isEmpty) {
-        throw Exception("Access token is not available.");
-      }
-
       final timezone = await getTimezoneName();
 
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/cbt/list'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'localDate': DateFormat('yyyy-MM-dd').format(day), // 선택한 날짜
-          'timezone': timezone,
-        }),
-      );
+      final response = await ApiService.post('/cbt/list', {
+        'localDate': DateFormat('yyyy-MM-dd').format(day),
+        'timezone': timezone,
+      });
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
-        if (data['code'] == 'S201') {
-          // 서버에서 받은 다이어리 데이터
-          List<dynamic> diaryList = data['data'];
-          setState(() {
-            diaries = diaryList.map((e) {
-              Diary diary = Diary.fromJson(e);
-              return diary;
-            }).toList();
-          });
-        } else {
-          throw Exception(data['message']);
-        }
+      if (data['code'] == 'S201') {
+        setState(() {
+          diaries = (data['data'] as List)
+              .map((e) => Diary.fromJson(e))
+              .toList();
+        });
       } else {
-        throw Exception('Failed to load diary data');
+        throw Exception(data['message']);
       }
     } catch (e) {
       // 오류 처리

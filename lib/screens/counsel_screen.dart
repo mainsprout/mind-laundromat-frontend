@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mind_laundromat/models/diary.dart';
 import 'package:mind_laundromat/screens/diary_detail_screen.dart';
+import 'package:mind_laundromat/services/api_service.dart';
 
 class CounselScreen extends StatefulWidget {
-  const CounselScreen({super.key});
+  final String userEmotion;
+
+  const CounselScreen({super.key, required this.userEmotion});
 
   @override
   State<CounselScreen> createState() => _CounselScreenState();
@@ -25,7 +26,7 @@ class _CounselScreenState extends State<CounselScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchUserEmotion();
+    _userEmotion = widget.userEmotion;
     _fetchBotEmotion();
     _messages.add({
       'role': 'bot',
@@ -33,47 +34,17 @@ class _CounselScreenState extends State<CounselScreen> {
     });
   }
 
-  // SharedPreferences에서 감정 값을 불러오기
-  Future<void> _fetchUserEmotion() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedEmotion = prefs.getString('selected_emotion');
-      if (savedEmotion != null && savedEmotion.isNotEmpty) {
-        setState(() {
-          _userEmotion = savedEmotion.toUpperCase();
-        });
-      }
-      prefs.remove('selected_emotion');
-    } catch (e) {
-      print('Failed to load emotion: $e');
-    }
-  }
-
   // 유저 정보에서 봇 프로필 가져오기
   Future<void> _fetchBotEmotion() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token') ?? '';
+      final response = await ApiService.get("/auth/info");
 
-      if (accessToken.isEmpty) {
-        throw Exception("Access token is not available.");
-      }
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/auth/info'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final emotion = data['data']['emotion']?.toString().toLowerCase();
-        if (emotion != null && emotion.isNotEmpty) {
-          setState(() {
-            _botEmotion = emotion;
-          });
-        }
+      final data = json.decode(response.body);
+      final emotion = data['data']['emotion']?.toString().toLowerCase();
+      if (emotion != null && emotion.isNotEmpty) {
+        setState(() {
+          _botEmotion = emotion;
+        });
       }
     } catch (e) {
       print('Failed to load emotion: $e');
@@ -109,48 +80,25 @@ class _CounselScreenState extends State<CounselScreen> {
       _controller.clear();
     });
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token') ?? '';
-
-      if (accessToken.isEmpty) {
-        throw Exception("Access token is not available.");
-      }
-
       //메시지 보내기
       final String body = userInput;
 
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/gemini/chat'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-          'Cookie': _cookie,
-        },
-        body: json.encode(body),
+      final response = await ApiService.postMessage(
+          "/gemini/chat", _cookie, body
       );
 
-
-      print('쿠키: $_cookie');
-
       // 메시지 받기
-      if (response.statusCode == 200) {
-        final setCookie = response.headers['set-cookie'];
-        print("쿠키");
-        if (setCookie != null) {
-          print("null 아님");
-          _cookie = extractCookie(setCookie) ?? '';
-          print(_cookie);
-        }
-
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        final String botResponse = data['gemini']!;
-
-        setState(() {
-          _messages.add({'role': 'bot', 'content': botResponse});
-        });
-      } else {
-        print('Failed to receive message. Status: ${response.statusCode}');
+      final setCookie = response.headers['set-cookie'];
+      if (setCookie != null) {
+        _cookie = extractCookie(setCookie) ?? '';
       }
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      final String botResponse = data['gemini']!;
+
+      setState(() {
+        _messages.add({'role': 'bot', 'content': botResponse});
+      });
     } catch (e) {
       setState(() {
         _messages.add({'role': 'bot', 'content': 'An error occurred.'});
@@ -165,30 +113,17 @@ class _CounselScreenState extends State<CounselScreen> {
   // 종료 시그널 보내기
   Future<String?> _sendEndSignal() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token') ?? '';
-
-      if (accessToken.isEmpty) {
-        throw Exception("Access token is not available.");
-      }
-
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/gemini/chat/complete?emotion=$_userEmotion'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-          'Cookie': _cookie,
-        },
+      final response = await ApiService.postMessage(
+          "/gemini/chat/complete?emotion=$_userEmotion",
+          _cookie,
+          ""
       );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        final diaryId = data['diary_id'];
-        print('다이어리 아이디는 $diaryId');
-        return diaryId;
-      } else {
-        print("HTTP 오류 상태 코드: ${response.statusCode}");
-      }
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      final diaryId = data['diary_id'];
+      print('다이어리 아이디는 $diaryId');
+      return diaryId;
+
     } catch (e) {
       print("예외 발생: $e");
     }
@@ -196,43 +131,26 @@ class _CounselScreenState extends State<CounselScreen> {
   }
 
   Future<void> _getDiary(String diaryId) async{
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token') ?? '';
-
-    if (accessToken.isEmpty) {
-      throw Exception("Access token is not available.");
-    }
-
     try {
       // 다이어리 정보 가져오기
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/cbt/$diaryId'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await ApiService.get("/cbt/$diaryId");
 
       // 전체 다이어리 정보 받기
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
-        if (data['code'] == 'S201') {
-          // 서버에서 받은 다이어리 데이터
-          final diaryJson = data['data'];
-          final Diary diary = Diary.fromJson(diaryJson);
+      if (data['code'] == 'S201') {
+        // 서버에서 받은 다이어리 데이터
+        final diaryJson = data['data'];
+        final Diary diary = Diary.fromJson(diaryJson);
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => DiaryDetailScreen(diary: diary),
-            ),
-          );
-        } else {
-          print("서버 응답 코드: ${data['code']}, 메시지: ${data['message']}");
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DiaryDetailScreen(diary: diary),
+          ),
+        );
       } else {
-        print("다이어리 정보 가져올때 오류코드: ${response.statusCode}");
+        print("서버 응답 코드: ${data['code']}, 메시지: ${data['message']}");
       }
     } catch (e) {
       print("다이어리 정보 예외!!: $e");

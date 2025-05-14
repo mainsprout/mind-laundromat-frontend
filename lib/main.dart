@@ -25,7 +25,6 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/calendar': (context) => const CalendarScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/counsel': (context) => const CounselScreen(),
         '/faq' : (context) => const FAQScreen(),
         '/select-emotions' : (context) => const SelectEmotionScreen(),
         '/distortion-details' : (context) => const DistortionDetail()

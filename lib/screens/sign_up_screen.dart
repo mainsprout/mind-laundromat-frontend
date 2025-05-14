@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/gestures.dart';
+import 'package:mind_laundromat/services/api_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -29,7 +30,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    final url = 'http://10.0.2.2:8080/auth/signup';
+    final url = '$baseUrl/auth/signup';
 
     try {
       final response = await http.post(

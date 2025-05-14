@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 import 'dart:math';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mind_laundromat/services/api_service.dart';
 
 
 class DistortionDetail extends StatefulWidget {
@@ -45,38 +44,26 @@ class _DistortionDetailState extends State<DistortionDetail> {
   @override
   void initState() {
     super.initState();
-    fetchDistortionData(); // 화면 초기화 시 데이터 요청
+    fetchDistortionData().then((_) {
+      // 이미지 프리캐싱
+      for (String name in distortionNames) {
+        precacheImage(AssetImage('assets/distortion_card/$name.png'), context);
+        precacheImage(AssetImage('assets/distortion_card/description/$name.png'), context);
+        precacheImage(AssetImage('assets/distortion_card/icons/$name.png'), context);
+      }
+    });
   }
 
   // API 요청을 보내서 데이터를 받아오는 함수
   Future<void> fetchDistortionData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
+    final response = await ApiService.get("/cbt/distortion/list");
 
-    if (accessToken == null) {
-      return;
-    }
-
-    final url = Uri.parse('http://10.0.2.2:8080/cbt/distortion/list');
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body); // JSON 파싱
-      setState(() {
-        total = data['data']['total'] ?? 1;
-        distortionData = List<Map<String, dynamic>>.from(data['data']['distortionList']);
-        distortionNames = distortionData.map((item) => item['distortionType'] as String).toList();
-
-      });
-    } else {
-      throw Exception('Failed to load distortion data');
-    }
+    final data = json.decode(response.body); // JSON 파싱
+    setState(() {
+      total = data['data']['total'] ?? 1;
+      distortionData = List<Map<String, dynamic>>.from(data['data']['distortionList']);
+      distortionNames = distortionData.map((item) => item['distortionType'] as String).toList();
+    });
   }
 
   void _changeImage(bool isNext) {

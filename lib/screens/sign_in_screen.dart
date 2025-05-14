@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'home_screen.dart';
 import 'package:flutter/gestures.dart';
+import 'package:mind_laundromat/services/api_service.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -50,7 +51,7 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<Map<String, dynamic>?> _loginApi(String email, String password) async {
-    final url = 'http://10.0.2.2:8080/login';
+    final url = '$baseUrl/login';
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(url));

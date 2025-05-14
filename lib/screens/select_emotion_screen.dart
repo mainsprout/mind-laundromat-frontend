@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/custom_app_bar.dart';
+import 'package:mind_laundromat/screens/counsel_screen.dart';
 
 class SelectEmotionScreen extends StatefulWidget {
   const SelectEmotionScreen({super.key});
@@ -29,7 +29,6 @@ class _SelectEmotionScreenState extends State<SelectEmotionScreen> {
           setState(() {
             selectedEmotion = emotion['name'];
           });
-          _saveSelectedEmotion(emotion['name']); // 감정 저장
         },
         child: Stack(
           alignment: Alignment.center,
@@ -48,14 +47,6 @@ class _SelectEmotionScreenState extends State<SelectEmotionScreen> {
                 right: 0,
                 bottom: 0,
                 child: Icon(Icons.check, color: Colors.white, size: 50,),
-                // child: Container(
-                //   width: 110,
-                //   height: 110,
-                //   decoration: BoxDecoration(
-                //     shape: BoxShape.circle,
-                //     border: Border.all(color: Colors.white, width: 4.0),
-                //   ),
-                // ),
               ),
           ],
         ),
@@ -63,19 +54,13 @@ class _SelectEmotionScreenState extends State<SelectEmotionScreen> {
     );
   }
 
-  // 선택된 감정을 SharedPreferences에 저장
-  Future<void> _saveSelectedEmotion(String? emotion) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (emotion != null) {
-      prefs.setString('selected_emotion', emotion);
-    }
-  }
-
   void goToCounsel() {
     if (selectedEmotion != null) {
-      Navigator.pushReplacementNamed(
+      Navigator.pushReplacement(
         context,
-        '/counsel',
+        MaterialPageRoute(
+          builder: (_) => CounselScreen(userEmotion: selectedEmotion!),
+        ),
       );
     }
   }
