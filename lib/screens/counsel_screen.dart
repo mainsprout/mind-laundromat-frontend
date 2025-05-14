@@ -19,7 +19,7 @@ class _CounselScreenState extends State<CounselScreen> {
   String _userEmotion ='';
   String _botEmotion = '';
   bool _isSending = false;
-  String _diaryId = '';
+  String _cookie = '';
 
   // 초기 메시지
   @override
@@ -80,6 +80,24 @@ class _CounselScreenState extends State<CounselScreen> {
     }
   }
 
+  // 쿠키 파싱 함수
+  String? extractCookie(String? setCookieHeader) {
+    if (setCookieHeader == null) return null;
+
+    // 여러 개의 쿠키가 있을 수 있으므로 세미콜론이나 콤마로 잘라줌
+    final cookies = setCookieHeader.split(',');
+    final cookieParts = <String>[];
+
+    for (var cookie in cookies) {
+      final parts = cookie.split(';');
+      if (parts.isNotEmpty) {
+        cookieParts.add(parts[0].trim()); // 이름=값 형태만 추출
+      }
+    }
+
+    return cookieParts.join('; ');
+  }
+
   // 메시지 주고받기
   Future<void> _sendMessage() async {
     final userInput = _controller.text.trim();
@@ -106,12 +124,24 @@ class _CounselScreenState extends State<CounselScreen> {
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
+          'Cookie': _cookie,
         },
         body: json.encode(body),
       );
 
+
+      print('쿠키: $_cookie');
+
       // 메시지 받기
       if (response.statusCode == 200) {
+        final setCookie = response.headers['set-cookie'];
+        print("쿠키");
+        if (setCookie != null) {
+          print("null 아님");
+          _cookie = extractCookie(setCookie) ?? '';
+          print(_cookie);
+        }
+
         final Map<String, dynamic> data = jsonDecode(response.body);
         final String botResponse = data['gemini']!;
 
@@ -133,7 +163,7 @@ class _CounselScreenState extends State<CounselScreen> {
   }
 
   // 종료 시그널 보내기
-  Future<void> _sendEndSignal() async {
+  Future<String?> _sendEndSignal() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token') ?? '';
@@ -142,29 +172,30 @@ class _CounselScreenState extends State<CounselScreen> {
         throw Exception("Access token is not available.");
       }
 
-      // 종료 시그널 및 감정 정보 보내기
       final response = await http.post(
         Uri.parse('http://10.0.2.2:8080/gemini/chat/complete?emotion=$_userEmotion'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
+          'Cookie': _cookie,
         },
       );
 
-      // 전체 다이어리 정보 받기
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        _diaryId = data['diary_id'];
-        print('다이어리 아이디는 $_diaryId');
+        final diaryId = data['diary_id'];
+        print('다이어리 아이디는 $diaryId');
+        return diaryId;
       } else {
         print("HTTP 오류 상태 코드: ${response.statusCode}");
       }
     } catch (e) {
       print("예외 발생: $e");
     }
+    return null;
   }
 
-  Future<void> _getDiary()async{
+  Future<void> _getDiary(String diaryId) async{
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('access_token') ?? '';
 
@@ -173,9 +204,9 @@ class _CounselScreenState extends State<CounselScreen> {
     }
 
     try {
-      // 종료 시그널 및 감정 정보 보내기
+      // 다이어리 정보 가져오기
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/cbt/$_diaryId'),
+        Uri.parse('http://10.0.2.2:8080/cbt/$diaryId'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -201,10 +232,10 @@ class _CounselScreenState extends State<CounselScreen> {
           print("서버 응답 코드: ${data['code']}, 메시지: ${data['message']}");
         }
       } else {
-        print("HTTP 오류 상태 코드: ${response.statusCode}");
+        print("다이어리 정보 가져올때 오류코드: ${response.statusCode}");
       }
     } catch (e) {
-      print("예외 발생!!: $e");
+      print("다이어리 정보 예외!!: $e");
     }
   }
 
@@ -214,10 +245,50 @@ class _CounselScreenState extends State<CounselScreen> {
   }
 
   // 챗 종료
-  void _endChat() {
-    _sendEndSignal();
-    _getDiary();
+  Future<void> _endChat() async {
+    final diaryId = await _sendEndSignal();
+    if (diaryId != null) {
+      await _getDiary(diaryId);
+    } else {
+      print('다이어리 ID를 받지 못해 이동할 수 없습니다.');
+    }
   }
+
+  Future<void> _onEndPressed() async {
+    final shouldEnd = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("End the chat?"),
+          content: Text("Are you sure you want to end the conversation? Your diary will be saved based on the current chat."),
+          backgroundColor: Colors.white,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text("Cancel", style: TextStyle(color: Colors.grey[400]),),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text("End", style: TextStyle(color: Colors.blue),),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldEnd == true) {
+      setState(() {
+        _isSending = true;
+      });
+
+      await _endChat();
+
+      setState(() {
+        _isSending = false;
+      });
+    }
+  }
+
 
   Widget _buildMessage(Map<String, String> message) {
     final isUser = message['role'] == 'user';
@@ -296,7 +367,7 @@ class _CounselScreenState extends State<CounselScreen> {
             padding: const EdgeInsets.only(right: 16.0),  // 오른쪽 아이콘과 벽 사이의 간격 설정
             child: IconButton(
               icon: const Icon(Icons.exit_to_app, color: Colors.black, size: 30),
-              onPressed: _endChat,
+              onPressed: _onEndPressed,
             ),
           ),
         ],
