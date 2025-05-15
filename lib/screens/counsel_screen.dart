@@ -114,7 +114,7 @@ class _CounselScreenState extends State<CounselScreen> {
   Future<String?> _sendEndSignal() async {
     try {
       final response = await ApiService.postMessage(
-          "/gemini/chat/complete?emotion=$_userEmotion",
+          "/gemini/chat/complete?emotion=${_userEmotion.toUpperCase()}",
           _cookie,
           ""
       );
