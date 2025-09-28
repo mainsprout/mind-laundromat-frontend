@@ -7,6 +7,7 @@
 ## Preparations
 
 ndk 27.0.12077973 needs to be installed
+
 api_service.dart : baseUrl을 본인의 디바이스나 서버에 맞춰 변경 필요
 
 ## Project Components (Screens)
