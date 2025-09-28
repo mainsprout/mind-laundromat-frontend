@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/api_service.dart';
+
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
 
@@ -33,10 +35,7 @@ class _StartScreenState extends State<StartScreen> {
     }
 
     try {
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/auth/info'),
-        headers: {'Authorization': 'Bearer $token'}, // 'Bearer ' 붙여서 보냄
-      );
+      final response = await ApiService.get("/auth/info");
 
       if (response.statusCode == 200) {
         setState(() {
@@ -49,7 +48,11 @@ class _StartScreenState extends State<StartScreen> {
         });
       }
     } catch (e) {
-      print('Access token expired');
+      debugPrint('Access token expired or request failed: $e');
+      setState(() {
+        prefs.clear();
+        _isLoggedIn = false;
+      });
     }
   }
 

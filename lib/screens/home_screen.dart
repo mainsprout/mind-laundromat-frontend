@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mind_laundromat/screens/distortion_detail.dart';
 
+import '../services/api_service.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -9,14 +11,43 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  bool _authChecked = false; // 최초 진입 가드 완료 여부
 
   @override
   void initState() {
     super.initState();
+    // 첫 프레임 이후에 가드 검사 → 실패 시 /start로 리다이렉트됨
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final ok = await ApiService.ensureAuthOrRedirect(context);
+      if (!mounted) return;
+      if (ok) {
+        setState(() => _authChecked = true);
+        // 필요 시 여기서 초기 데이터 로딩:
+        // final res = await ApiService.guardedGet(context, '/cbt/list');
+      }
+      // ok=false면 이미 /start로 이동했으니 여기서 아무것도 안 함
+    });
+  }
+
+  Future<void> _navigateIfAuthed(Future<void> Function() nav) async {
+    // 버튼/아이콘 눌렀을 때도 세션 만료면 /start로 보냄
+    final ok = await ApiService.ensureAuthOrRedirect(context);
+    if (!mounted || !ok) return;
+    await nav();
   }
 
   @override
   Widget build(BuildContext context) {
+    // 최초 진입 가드가 끝나기 전엔 깜빡임 방지를 위해 가벼운 로딩만
+    if (!_authChecked) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(

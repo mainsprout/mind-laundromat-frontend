@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const StartScreen(), // 홈을 StartScreen으로 설정
       routes: {
+        '/start': (context) => const StartScreen(),
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/sign-in': (context) => const SignInScreen(),
