@@ -57,10 +57,10 @@ class _DistortionDetailState extends State<DistortionDetail> {
   // API 요청을 보내서 데이터를 받아오는 함수
   Future<void> fetchDistortionData() async {
     final response = await ApiService.get("/cbt/distortion/list");
-
     final data = json.decode(response.body); // JSON 파싱
+
     setState(() {
-      total = data['data']['total'] ?? 1;
+      total = data['data']['total'];
       distortionData = List<Map<String, dynamic>>.from(data['data']['distortionList']);
       distortionNames = distortionData.map((item) => item['distortionType'] as String).toList();
     });
@@ -89,13 +89,14 @@ class _DistortionDetailState extends State<DistortionDetail> {
 
     // 선택된 distortion의 퍼센트 계산
     double percentage = 0.0;
-    if (distortionData.isNotEmpty) {
+    if (distortionData.isNotEmpty && total > 0) {
       final distortion = distortionData.firstWhere(
             (item) => item['distortionType'] == distortionNames[selectedIndex],
-        //orElse: () => {'count': 0, 'total': 1},
       );
       final count = distortion['count'] ?? 0;
       percentage = count / total * 100;
+    } else {
+      percentage = 0;
     }
 
     return Scaffold(
