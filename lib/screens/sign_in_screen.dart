@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'home_screen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:mind_laundromat/services/api_service.dart';
+import 'dart:io';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -68,6 +69,12 @@ class _SignInScreenState extends State<SignInScreen> {
           return {'token': token};
         }
       }
+      return null;
+    } on SocketException {
+      // 서버 주소 잘못됐거나, 서버가 실행 안 됐을 때
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot connect to server. Please check your network or server status.")),
+      );
       return null;
     } catch (e) {
       print('Error: $e');

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/gestures.dart';
 import 'package:mind_laundromat/services/api_service.dart';
+import 'dart:io';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -52,6 +53,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           SnackBar(content: Text("Failed to sign up: ${error['message'] ?? 'Unknown error'}")),
         );
       }
+    } on SocketException {
+      // 서버 주소 잘못됐거나, 서버가 실행 안 됐을 때
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot connect to server. Please check your network or server status.")),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
