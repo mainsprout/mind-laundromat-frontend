@@ -1,16 +1,20 @@
-# mind_laundromat (frontend)
+# 🧠 Mind Laundromat - frontend
+CBT(인지행동치료) 기반 감정관리 앱 Mind Laundromat(마음 세탁소)의 프론트 프로젝트입니다.  
+이 앱은 Flutter를 이용해 개발되었습니다.
 
-## Project Overview
+> ⚠️ 본 앱은 의료 행위를 대체하지 않습니다. 위기 상황에서는 반드시 긴급 서비스를 이용하세요.
 
-심리치료 기반 감정관리 앱 "마음 세탁소"의 프론트엔드 프로젝트 입니다. 이 앱은 Flutter를 이용해 개발되었습니다.
+<br>
 
-## Preparations
+## 🖥 Preparations
 
 ndk 27.0.12077973 needs to be installed
 
-api_service.dart : baseUrl을 본인의 디바이스나 서버에 맞춰 변경 필요
+api_service.dart : baseUrl을 본인의 디바이스나 서버에 맞춰 변경 필요합니다
 
-## Project Components (Screens)
+<br>
+
+## 📁 Project Components (Screens)
 
 **로그인&홈화면**
 - start_screen.dart : 첫 화면. 로그인이 되어 있지 않다면 login_screen.dart 으로, 로그인이 되어 있다면 home_screen.art 로 이동.
@@ -34,3 +38,4 @@ api_service.dart : baseUrl을 본인의 디바이스나 서버에 맞춰 변경 
 **프로필**
 - profile_screen.dart : 프로필 화면. 본인의 정보를 수정하거나 로그아웃, 계정 삭제 등을 할 수 있음.
 - faq_screen.dart : faq 화면. 추가예정.
+  
