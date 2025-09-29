@@ -45,9 +45,9 @@ api_service.dart : baseUrl을 본인의 디바이스나 서버에 맞춰 변경 
 
 <table>
   <tr>
+    <td align="center"><a href="https://github.com/dusal1111"><img src="https://avatars.githubusercontent.com/u/147612119?v=4" width="100px;" alt=""/><br /><sub><b>dusal1111</b></sub></a><br />🎨</td>
     <td align="center"><a href="https://github.com/mainsprout"><img src="https://avatars.githubusercontent.com/u/143585656?s=400&u=c4fc8317d32cc54a7091f164a2667cbbc14fa482&v=4" width="100px;" alt=""/><br /><sub><b>mainsprout</b></sub></a><br />🌱</td>
     <td align="center"><a href="https://github.com/hym7196"><img src="https://avatars.githubusercontent.com/u/64295988?v=4" width="100px;" alt=""/><br /><sub><b>hym7196</b></sub></a><br />🎨</td>
-    <td align="center"><a href="https://github.com/dusal1111"><img src="https://avatars.githubusercontent.com/u/147612119?v=4" width="100px;" alt=""/><br /><sub><b>dusal1111</b></sub></a><br />🎨</td>
   </tr>
 </table>
 
